@@ -1,0 +1,12 @@
+#!/bin/sh
+
+HOST=$1
+CA=ca.gautier.org
+VAULT_PATH="$PKI_ROOT/$CA"
+
+easypki revoke $VAULT_PATH/certs/$HOST.crt
+cat $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/keys/$HOST.key > $VAULT_PATH/certs/$(date +"%Y-%m-%d").$HOST.pem
+mv $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/.trash/$HOST.crt
+mv $VAULT_PATH/keys/$HOST.key $VAULT_PATH/.trash/$HOST.key
+
+/bin/ca-refresh

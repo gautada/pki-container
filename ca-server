@@ -1,0 +1,14 @@
+#!/bin/sh
+
+HOST=$1
+CA=ca.gautier.org
+VAULT_PATH="$PKI_ROOT/$CA"
+
+mkdir -p $VAULT_PATH/public
+chmod 777 $VAULT_PATH/public
+easypki create --ca-name $CA --expire 3650 --dns $HOST $HOST
+
+cat $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/public/ca.gautier.org.pem > $VAULT_PATH/public/$HOST.pem
+chmod +r-w $VAULT_PATH/public/$HOST.pem
+/bin/ca-refresh
+
