@@ -90,3 +90,9 @@ cert + key = cert
 
 
 Docker needs to be --privilaged
+
+Notes: 
+
+Error with 10M container "https://superuser.com/questions/1557750/why-does-cryptsetup-fail-with-container-10m-in-size"
+Reference: https://wiki.alpinelinux.org/wiki/LVM_on_LUKS
+
