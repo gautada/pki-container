@@ -25,29 +25,38 @@ if [ -d $PKILIB_PATH ] ; then
    echo "Updating ecrypted virtual drives"
    git pull
  else
-   echo "No repository found, Key repository should be cloned to ($PKILIB_PATH)"
+   echo "No repository found, Key repository should be cloned to ($PKILIB_PATH)."
  fi
  for p in $PKILIB_PATH/*.evd ; do # loop through the evd files 
    if [ -f $p ] ; then
      f=${p%.evd}
      v=${f##*/}
      if [ -d /mnt/pki/$v ] ; then
-       read -n3 -p "Decrypt and mount encrypted virtual drive $p as $v_vd? (type capitalized 'yes' to confirm)" confirm 
+       read -n4 -p "Decrypt and mount encrypted virtual drive $p as $v? (type capitalized 'yes' to confirm) " confirm 
        echo
        case $confirm in  
-         "YES") echo "Opening $p as $v_vd" \
-               && sudo cryptsetup luksOpen "$p" "$v_vd" \
-               && echo "Mounting $v_vd as /mnt/pki/$v" \
-               && sudo mount "/dev/mapper/$v_vd" "/mnt/pki/$v" ;; 
-         *) echo "Will nout mount $v." ;; 
+         "YES") echo "Opening $p as $v" \
+               && sudo cryptsetup luksOpen $p $v \
+               && echo "Mounting $v as /mnt/pki/$v" \
+               && sudo mount "/dev/mapper/$v" "/mnt/pki/$v" ;; 
+         *) echo "Will not mount $v." ;; 
        esac
-       echo "Completed with exit code $?"
+       if [ $? -eq 0 ] ; then
+	 echo "Successfully mounted $v."
+         date +%s > "/mnt/pki/$v/.last"
+       else
+	 echo "Failed with exit code $?."
+         echo "Attempting Rollback"
+         sudo umount "/mnt/pki/$v"
+         sudo cryptsetup luksClose $v
+       fi
+       echo "Completed with exit code $?."
      else
-       echo "No mount point (/mnt/pki/$v) found"
+       echo "No mount point (/mnt/pki/$v) found."
      fi
    fi
   done
 else
-  echo "No pki library found ($PKILIB_PATH)"
+  echo "No pki library found ($PKILIB_PATH)."
 fi
 cd

@@ -40,9 +40,9 @@ RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/u
  && ln -s /opt/pki-data /home/pki/vaults \
  && mkdir -p /var/lib/pki \
  && chown pki:pki /var/lib/pki \
- && mkdir -p /mnt/pki/keys_root \
- && mkdir -p /mnt/pki/keys_gautier_org \
- && mkdir -p /mnt/pki/keys_gautier_local \
+ && mkdir -p /mnt/pki/ca \
+ && mkdir -p /mnt/pki/ca.gautier.local \
+ && mkdir -p /mnt/pki/ca.gautier.org \
  && chown -R pki:pki /home/pki  
 
 # RUN touch /var/lib/pki/one.evd && touch touch /var/lib/pki/two.evd
