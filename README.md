@@ -73,9 +73,21 @@ The Ccertificate authoprity (CA) is setup and managed via [easypki(https://githu
 
 Build CA
 
+```
+easypki --root ~/certificates create --filename root --ca "Adam Thomas Gautier Personal Certificate Authority"
+mv ~/ca/root/keys/*.key /mnt/root.kvlt/
+```
+
 Build Intermediate CA
 
+```
+easypki --root ~/certificates create --ca-name root --filename ca.gautier.local --intermediate "Certificate Authority for ca.gautier.local"
+mv ~/ca/ca.gautier.local/keys/*.key /mnt/ca.gautier.local.kvlt/
+```
+
 Server Certificate
+
+
 
 Client Certificate
 
