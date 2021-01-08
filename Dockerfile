@@ -27,20 +27,20 @@ COPY ca-client /usr/bin/ca-client
 COPY ca-revoke /usr/bin/ca-revoke
 COPY vault-mount /usr/bin/vault-mount
 COPY vault-umount /usr/bin/vault-umount
+COPY vault-monitor /usr/bin/vault-monitor
 
 COPY profile /home/pki/.profile
+COPY logout /home/pki/.logout
 
 # Use comma (,) to seperate commands in wheel
 # http://www.softpanorama.org/Access_control/Sudo/sudoer_file_examples.shtml
-RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/umount,/sbin/cryptsetup,/sbin/mkfs.ext4" >> /etc/sudoers \
+RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/umount,/sbin/cryptsetup,/sbin/mkfs.ext4,/bin/chown" >> /etc/sudoers \
  && adduser -D -s /bin/sh pki \
  && echo 'pki:pki' | chpasswd \
  && usermod -aG wheel pki \
  && mkdir -p /opt/pki-data \
- && ln -s /opt/pki-data /home/pki/vaults \
- && mkdir -p /var/lib/pki \
- && chown pki:pki /var/lib/pki \
- && mkdir -p /mnt/pki/ca \
+ && ln -s /opt/pki-data /home/pki/ca \
+ && mkdir -p /mnt/pki/root \
  && mkdir -p /mnt/pki/ca.gautier.local \
  && mkdir -p /mnt/pki/ca.gautier.org \
  && chown -R pki:pki /home/pki  

@@ -1,33 +1,16 @@
 #!/bin/sh
 
 # This is a script to mount the encrypted ca.vhd making it available to the pki docker container.
-# VAULT=$1
-# PKI_PATH="/home/mada/Development/Configuration/pki"
-# VHD_FILE="$PKI_PATH/disks/$VAULT.vhd"
-# VAULT_PATH="$PKI_PATH/vaults/$VAULT"
-# echo $VAULT_PATH
-# if [ -f $VHD_FILE ] ; then
-#     if [ -f "$VAULT_PATH/.last" ] ; then
-#         echo "Vault '$VAULT' is already mounted"
-#     else
-#         sudo cryptsetup luksOpen "$VHD_FILE" "$VAULT.crypt"
-#         sudo mount "/dev/mapper/$VAULT.crypt" "$VAULT_PATH"
-#         date +%s > "$VAULT_PATH/.last"
-#     fi
-# else
-#    echo "Cannot find the virtual hard drive (vhd) file for vault '$VAULT' to mount"
-# fi
 
-PKILIB_PATH=/var/lib/pki
-if [ -d $PKILIB_PATH ] ; then
- cd $PKILIB_PATH
- if [ -d $PKILIB_PATH/.git ] ; then 
+if [ -d /home/pki/keys ] ; then
+ cd /home/pki/keys
+ if [ -d /home/pki/keys/.git ] ; then 
    echo "Updating ecrypted virtual drives"
    git pull
  else
-   echo "No repository found, Key repository should be cloned to ($PKILIB_PATH)."
+   echo "No key repository found"
  fi
- for p in $PKILIB_PATH/*.evd ; do # loop through the evd files 
+ for p in /home/pki/keys/*.evd ; do # loop through the evd files 
    if [ -f $p ] ; then
      f=${p%.evd}
      v=${f##*/}
@@ -57,6 +40,6 @@ if [ -d $PKILIB_PATH ] ; then
    fi
   done
 else
-  echo "No pki library found ($PKILIB_PATH)."
+  echo "Key repository not configured."
 fi
 cd
