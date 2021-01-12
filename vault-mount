@@ -1,45 +1,61 @@
 #!/bin/sh
 
-# This is a script to mount the encrypted ca.vhd making it available to the pki docker container.
 
-if [ -d /home/pki/keys ] ; then
- cd /home/pki/keys
- if [ -d /home/pki/keys/.git ] ; then 
-   echo "Updating ecrypted virtual drives"
-   git pull
- else
-   echo "No key repository found"
- fi
- for p in /home/pki/keys/*.evd ; do # loop through the evd files 
-   if [ -f $p ] ; then
-     f=${p%.evd}
-     v=${f##*/}
-     if [ -d /mnt/pki/$v ] ; then
-       read -n4 -p "Decrypt and mount encrypted virtual drive $p as $v? (type capitalized 'yes' to confirm) " confirm 
-       echo
-       case $confirm in  
-         "YES") echo "Opening $p as $v" \
-               && sudo cryptsetup luksOpen $p $v \
-               && echo "Mounting $v as /mnt/pki/$v" \
-               && sudo mount "/dev/mapper/$v" "/mnt/pki/$v" ;; 
-         *) echo "Will not mount $v." ;; 
-       esac
-       if [ $? -eq 0 ] ; then
-	 echo "Successfully mounted $v."
-         date +%s > "/mnt/pki/$v/.last"
-       else
-	 echo "Failed with exit code $?."
-         echo "Attempting Rollback"
-         sudo umount "/mnt/pki/$v"
-         sudo cryptsetup luksClose $v
-       fi
-       echo "Completed with exit code $?."
-     else
-       echo "No mount point (/mnt/pki/$v) found."
-     fi
-   fi
-  done
+mount_vault () {
+  name=$1
+  key="/home/pki/keys/$1.evd"
+  vault="/dev/mapper/$1"
+  mount="/mnt/pki/$1"
+  if [ ! -f $key ] ; then
+    echo "Key file ($1) not found in repository."
+  else
+    if [ ! -d $mount ] ; then 
+      echo "Mount point ($1) not found."
+    else
+      read -n4 -p "Decrypt and mount vault $name? (type capitalized 'yes' to confirm)> " confirm
+      case $confirm in
+      "YES") echo "Opening $key as $1" \
+              && sudo cryptsetup luksOpen $key $1 \
+              && echo "Mounting $name as $mount" \
+              && sudo mount "$vault" "$mount"
+             if [ $? -eq 0 ] ; then
+               echo "Successfully mounted $name."
+               date +%s > "$mount/.last"
+             else
+               echo "Failed with exit code $?."
+               echo "Attempting Rollback"
+               sudo umount "$mount"
+               sudo cryptsetup luksClose $name
+             fi
+        ;;
+      *) echo "]$confirm["
+         echo "Not mounting vault $name" 
+         exit 99 
+        ;;
+      esac
+    fi
+  fi
+}
+
+if [ ! -d /home/pki/keys ] ; then
+  echo "key repository not configured."
 else
-  echo "Key repository not configured."
+  cd /home/pki/keys
+  if [ ! -d /home/pki/keys/.git ] ; then 
+    echo "No key repository setup"
+  else
+    echo "Updating ecrypted virtual drives"
+    git pull
+  fi
+  if [ -z $1 ] ; then
+    for p in /home/pki/keys/*.evd ; do # loop through the evd files 
+      f=${p%.evd}
+      v=${f##*/}
+      mount_vault $v
+    done
+  else
+    mount_vault $1
+  fi
 fi
-cd
+
+cd /home/pki # Reset to pki home directory
