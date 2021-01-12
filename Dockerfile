@@ -13,7 +13,7 @@ RUN apk add --no-cache e2fsprogs easypki cryptsetup git openssl sudo shadow nano
 # busybox-suid
 # parted lvm2
 
-ENV PKI_ROOT=/home/pki/vaults
+ENV PKI_ROOT=/home/pki/root
 ENV PKI_ORGANIZATION="Adam Gautier"
 ENV PKI_ORGANIZATIONAL_UNIT=Personal
 ENV PKI_COUNTRY=US
@@ -34,11 +34,12 @@ COPY logout /home/pki/.logout
 
 # Use comma (,) to seperate commands in wheel
 # http://www.softpanorama.org/Access_control/Sudo/sudoer_file_examples.shtml
-RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/umount,/sbin/cryptsetup,/sbin/mkfs.ext4,/bin/chown" >> /etc/sudoers \
+RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/umount,/sbin/cryptsetup,/sbin/mkfs.ext4,/bin/chown,/bin/chmod" >> /etc/sudoers \
  && adduser -D -s /bin/sh pki \
  && echo 'pki:pki' | chpasswd \
  && usermod -aG wheel pki \
  && mkdir -p /opt/pki-data \
+ && chown -R pki:pki /opt/pki-data
  && ln -s /opt/pki-data /home/pki/ca \
  && mkdir -p /mnt/pki/root \
  && mkdir -p /mnt/pki/ca.gautier.local \
