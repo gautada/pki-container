@@ -27,20 +27,20 @@
 TIMEOUT=$(((5 * 60)))
 VAULT=$1
 
-# unmount_vault () {
-#   mountpoint "/mnt/pki/$1"
-#   if [ $? -eq 0 ] ; then
-#     sudo umount "/mnt/pki/$1"
-#   else
-#     echo "Nothing to unmount"
-#   fi
-#   echo "Closing device $1"
-#   if [ -e "/dev/mapper/$1" ] ; then # check device exists
-#     sudo cryptsetup luksClose $1
-#   else
-#     echo "$1 virtual device not found"
-#   fi
-# }
+unmount_vault () {
+  mountpoint "/mnt/pki/$1"
+  if [ $? -eq 0 ] ; then
+    sudo umount "/mnt/pki/$1"
+  else
+    echo "Nothing to unmount"
+  fi
+    echo "Closing device $1"
+    if [ -e "/dev/mapper/$1" ] ; then # check device exists
+      sudo cryptsetup luksClose $1
+    else
+      echo "$1 virtual device not found"
+    fi
+}
 
 for mp in /mnt/pki/* ; do # loop through the moint points
   v=${mp##*/}
