@@ -20,7 +20,7 @@ ENV PKI_COUNTRY=US
 ENV PKI_LOCALITY=Charlotte
 ENV PKI_PROVINCE="North Carolina"
 
-COPY ca-setup /usr/bin/ca-setup
+# COPY ca-setup /usr/bin/ca-setup
 COPY ca-refresh /usr/bin/ca-refresh
 COPY ca-server /usr/bin/ca-server
 COPY ca-client /usr/bin/ca-client
@@ -38,12 +38,9 @@ RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/u
  && adduser -D -s /bin/sh pki \
  && echo 'pki:pki' | chpasswd \
  && usermod -aG wheel pki \
- && ln -s /opt/pki-data/root /home/pki/root \
- && mkdir -p /mnt/pki/ca \
- && mkdir -p /mnt/pki/ca.gautier.local \
- && mkdir -p /mnt/pki/ca.gautier.org \
+ && mkdir -p /mnt/pki/root \
  && chown -R pki:pki /mnt/pki \
- && ln -s /mnt/pki /home/pki/mounts \
+ && ln -s /mnt/pki/root /home/pki/root \
  && chown -R pki:pki /home/pki  
 
 # RUN touch /var/lib/pki/one.evd && touch touch /var/lib/pki/two.evd

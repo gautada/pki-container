@@ -1,84 +1,17 @@
 #!/bin/sh
 
-# Simple script to poll a file in the ca.vault that has the last accessed timestamp. If the file has not been updated 
-# within the coded timeout period then unmount the volume.
-# VAULT=$1
-# echo "Cleanup vault: $VAULT"
-# LAST_FILE=/opt/docker/pki/vaults/$VAULT.vault/.last
-# echo "File:$LAST_FILE"
-# TIMEOUT=$(((5 * 60)))
-# echo "Timeout:$TIMEOUT"
-# if [ -f "$LAST_FILE" ] ; then
-#     LAST_TIMESTAMP=$(cat "$LAST_FILE")
-#     CURRENT_TIMESTAMP=$(date +%s)
-#     echo "Current:$CURRENT_TIMESTAMP - Last:$LAST_TIMESTAMP"
-#     DELTA_TIMESTAMP=$((($CURRENT_TIMESTAMP - $LAST_TIMESTAMP)))
-#     echo "Delta:$DELTA_TIMESTAMP"
-#     if  [ 1 = $((($DELTA_TIMESTAMP > $TIMEOUT))) ] ; then
-#         echo "Vault '$VAULT' will be unmounted"
-#         /home/mada/Development/Scripts/umount-vault $VAULT        
-#     else
-#         echo "Vault '$VAULT' timeout has not been reached"
-#     fi
-# else
-#     echo "Vault '$VAULT' is not mounted"
-# fi
+# 2021-01-12 Massively simplified
 
-TIMEOUT=$(((5 * 60)))
-VAULT=$1
+if [ ! -f /mnt/pki/root/.last ] ; then
+  vault-umount # Not mounted so just clean up
+  exit 99 # Quit with exit code but do nothing because not mounted
+fi
 
-unmount_vault () {
-  mountpoint "/mnt/pki/$1"
-  if [ $? -eq 0 ] ; then
-    sudo umount "/mnt/pki/$1"
-  else
-    echo "Nothing to unmount"
-  fi
-    echo "Closing device $1"
-    if [ -e "/dev/mapper/$1" ] ; then # check device exists
-      sudo cryptsetup luksClose $1
-    else
-      echo "$1 virtual device not found"
-    fi
-}
-
-for mp in /mnt/pki/* ; do # loop through the moint points
-  v=${mp##*/}
-  mountpoint "/mnt/pki/$v"
-  if [ $? -eq 0 ] ; then
-    if [ -f "$mp/.last" ] ; then
-      LAST_TIMESTAMP=$(cat "$mp/.last")
-      CURRENT_TIMESTAMP=$(date +%s)
-      DELTA_TIMESTAMP=$((($CURRENT_TIMESTAMP - $LAST_TIMESTAMP)))
-      if [ 1 = $((($DELTA_TIMESTAMP > $TIMEOUT))) ] ; then
-        vault-umount $v
-      fi
-    fi
-  else
-    if [ -e "/dev/mapper/$v" ] ; then # check device exists
-      sudo cryptsetup luksClose $v
-    fi
-  fi
-
-  if [ -d $mp ] ; then
-    v=${mp##*/}
-    unmount_vault $v
-  fi
-done
-
- 
-# else
-#   unmount_vault $VAULT
-# fi
-
-# if [ -f "/opt/docker/pki/vaults/$VAULT.vault/.last" ] ; then
-#     sudo umount /opt/docker/pki/vaults/$VAULT.vault
-#     sudo cryptsetup luksClose /dev/mapper/$VAULT.crypt
-# else
-#     echo "Vault '$VAULT' is not mounted"
-# fi
-#  
-# for mp in /mnt/pki/* ; do # loop through the moint points 
-#    if [ -d $mp ] ; then
-#    fi
-# done
+MINUTES=3
+TIMEOUT=$((($MINUTES * 60)))
+LAST_TIMESTAMP=$(cat /mnt/pki/root/.last")
+CURRENT_TIMESTAMP=$(date +%s)
+DELTA_TIMESTAMP=$((($CURRENT_TIMESTAMP - $LAST_TIMESTAMP)))
+if [ 1 = $((($DELTA_TIMESTAMP > $TIMEOUT))) ] ; then
+  vault-umount $v
+fi

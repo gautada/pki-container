@@ -1,61 +1,48 @@
 #!/bin/sh
 
-
-mount_vault () {
-  name=$1
-  key="/home/pki/repo/$1.evd"
-  vault="/dev/mapper/$1"
-  mount="/mnt/pki/$1"
-  if [ ! -f $key ] ; then
-    echo "Key file ($1) not found in repository."
-  else
-    if [ ! -d $mount ] ; then 
-      echo "Mount point ($1) not found."
-    else
-      read -n4 -p "Decrypt and mount vault $name? (type capitalized 'yes' to confirm)> " confirm
-      case $confirm in
-      "YES") echo "Opening $key as $1" \
-              && sudo cryptsetup luksOpen $key $1 \
-              && echo "Mounting $name as $mount" \
-              && sudo mount "$vault" "$mount"
-             if [ $? -eq 0 ] ; then
-               echo "Successfully mounted $name."
-               date +%s > "$mount/.last"
-             else
-               echo "Failed with exit code $?."
-               echo "Attempting Rollback"
-               sudo umount "$mount"
-               sudo cryptsetup luksClose $name
-             fi
-        ;;
-      *) echo "]$confirm["
-         echo "Not mounting vault $name" 
-         exit 99 
-        ;;
-      esac
-    fi
-  fi
-}
+# 2021-01-12 Massive simplification
 
 if [ ! -d /home/pki/repo ] ; then
-  echo "key repository not configured."
-else
-  cd /home/pki/repo
-  if [ ! -d /home/pki/repo/.git ] ; then 
-    echo "No key repository setup"
-  else
-    echo "Updating ecrypted virtual drives"
-    git pull
-  fi
-  if [ -z $1 ] ; then
-    for p in /home/pki/keys/*.evd ; do # loop through the evd files 
-      f=${p%.evd}
-      v=${f##*/}
-      mount_vault $v
-    done
-  else
-    mount_vault $1
-  fi
+  echo "[ERROR] key repository not configured."
+  exit 99
+fi
+if [ ! -d /home/pki/repo/.git ] ; then 
+  echo "[ERROR] No key repository setup"
+  exit 98
+fi
+if [ ! -d /mnt/pki/root ] ; then
+  echo "[ERROR] No mount point found."
+  exit 97
+fi
+if [ ! -f /home/pki/repo/root.evd ] ; then
+  echo "[ERROR] root PKI encrypted virtual disk not found"
+  exit 96
 fi
 
-cd /home/pki # Reset to pki home directory
+
+echo "Updating ecrypted virtual drive in repository"
+CURRENT_DIR=$(pwd)
+cd /home/pki/repo
+git pull
+cd $CURRENT_DIR
+
+read -n4 -p "Decrypt and mount vault $name? (type capitalized 'yes' to confirm)> " confirm
+case $confirm in
+  "YES") echo "Decrypting /home/pki/repo/root.evd as root" \
+         && sudo cryptsetup luksOpen root /home/pki/repo/root.evd \
+         && echo "Mounting 'root' as /mnt/pki/root" \
+         && sudo mount /dev/mapper/root /mnt/pki/root
+         if [ $? -eq 0 ] ; then
+           echo "Successfully mounted root"
+           date +%s > "/mnt/pki/root/.last"
+         else
+           echo "Failed with exit code $?."
+           echo "Attempting Rollback"
+           sudo umount /mnt/pki/root
+           sudo cryptsetup luksClose root
+         fi
+  ;;
+  *) echo "Not mounting vault root"
+     exit 95
+  ;;
+esac
