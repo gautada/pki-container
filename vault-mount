@@ -3,7 +3,7 @@
 
 mount_vault () {
   name=$1
-  key="/home/pki/keys/$1.evd"
+  key="/home/pki/repo/$1.evd"
   vault="/dev/mapper/$1"
   mount="/mnt/pki/$1"
   if [ ! -f $key ] ; then
@@ -37,11 +37,11 @@ mount_vault () {
   fi
 }
 
-if [ ! -d /home/pki/keys ] ; then
+if [ ! -d /home/pki/repo ] ; then
   echo "key repository not configured."
 else
-  cd /home/pki/keys
-  if [ ! -d /home/pki/keys/.git ] ; then 
+  cd /home/pki/repo
+  if [ ! -d /home/pki/repo/.git ] ; then 
     echo "No key repository setup"
   else
     echo "Updating ecrypted virtual drives"

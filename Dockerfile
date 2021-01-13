@@ -7,7 +7,7 @@ RUN echo "America/New_York" > /etc/timezone
 
 FROM alpine:3.12.1
 
-VOLUME ["/opt/pki-data"]
+# VOLUME ["/opt/pki-data"]
 
 RUN apk add --no-cache e2fsprogs easypki cryptsetup git openssl sudo shadow nano
 # busybox-suid
@@ -38,12 +38,12 @@ RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/u
  && adduser -D -s /bin/sh pki \
  && echo 'pki:pki' | chpasswd \
  && usermod -aG wheel pki \
- && mkdir -p /opt/pki-data \
- && chown -R pki:pki /opt/pki-data
- && ln -s /opt/pki-data /home/pki/ca \
- && mkdir -p /mnt/pki/root \
+ && ln -s /opt/pki-data/root /home/pki/root \
+ && mkdir -p /mnt/pki/ca \
  && mkdir -p /mnt/pki/ca.gautier.local \
  && mkdir -p /mnt/pki/ca.gautier.org \
+ && chown -R pki:pki /mnt/pki \
+ && ln -s /mnt/pki /home/pki/mounts \
  && chown -R pki:pki /home/pki  
 
 # RUN touch /var/lib/pki/one.evd && touch touch /var/lib/pki/two.evd
