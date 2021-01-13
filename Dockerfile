@@ -41,7 +41,11 @@ RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/u
  && mkdir -p /mnt/pki/root \
  && chown -R pki:pki /mnt/pki \
  && ln -s /mnt/pki/root /home/pki/root \
- && chown -R pki:pki /home/pki  
+ && chown -R pki:pki /home/pki \
+ && ln -s /usr/bin/vault-monitor /etc/periodic/15min/00-vault-monitor 
+
+# /usr/bin/vault-monitor
+  
 
 # RUN touch /var/lib/pki/one.evd && touch touch /var/lib/pki/two.evd
 #  && echo "date +%s > /opt/docker/pki/vaults/root/.last" > /root/.ash_history \

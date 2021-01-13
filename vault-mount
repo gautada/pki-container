@@ -29,11 +29,12 @@ cd $CURRENT_DIR
 read -n4 -p "Decrypt and mount vault $name? (type capitalized 'yes' to confirm)> " confirm
 case $confirm in
   "YES") echo "Decrypting /home/pki/repo/root.evd as root" \
-         && sudo cryptsetup luksOpen root /home/pki/repo/root.evd \
+         && sudo cryptsetup luksOpen /home/pki/repo/root.evd root \
          && echo "Mounting 'root' as /mnt/pki/root" \
          && sudo mount /dev/mapper/root /mnt/pki/root
          if [ $? -eq 0 ] ; then
            echo "Successfully mounted root"
+           date
            date +%s > "/mnt/pki/root/.last"
          else
            echo "Failed with exit code $?."
