@@ -1,2 +1,3 @@
 # Ignore Xcode files
 *.xcodeproj/
+*-data/

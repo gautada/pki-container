@@ -1,26 +1,12 @@
 #!/bin/sh
 
-# Simple script to unmount the pki mounts and encrypted vaults.  Either specify a mount/vault
-# to unmount or if no parameter then all are unmounted.
+# 2021-01-12 Moving to the same setup as the massively simplified vault-mount
 
-unmount_vault () {
-  mountpoint -q "/mnt/pki/$1"
-  if [ $? -eq 0 ] ; then
-    sudo umount "/mnt/pki/$1"
-  fi
-  if [ -e "/dev/mapper/$1" ] ; then # check device exists
-    sudo cryptsetup luksClose $1
-  fi
-}
-
-if [ -n $1 ] ; then
-  for mp in /mnt/pki/* ; do # loop through the moint points
-   if [ -d $mp ] ; then
-    v=${mp##*/}
-    unmount_vault $v
-   fi
-  done 
-else
-  unmount_vault $1
+mountpoint -q /mnt/pki/root
+if [ $? -eq 0 ] ; then
+  sudo umount /mnt/pki/root
+fi
+if [ -e "/dev/mapper/root" ] ; then # check device exists
+   sudo cryptsetup luksClose root  
 fi
 

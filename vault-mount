@@ -1,45 +1,49 @@
 #!/bin/sh
 
-# This is a script to mount the encrypted ca.vhd making it available to the pki docker container.
+# 2021-01-12 Massive simplification
 
-if [ -d /home/pki/keys ] ; then
- cd /home/pki/keys
- if [ -d /home/pki/keys/.git ] ; then 
-   echo "Updating ecrypted virtual drives"
-   git pull
- else
-   echo "No key repository found"
- fi
- for p in /home/pki/keys/*.evd ; do # loop through the evd files 
-   if [ -f $p ] ; then
-     f=${p%.evd}
-     v=${f##*/}
-     if [ -d /mnt/pki/$v ] ; then
-       read -n4 -p "Decrypt and mount encrypted virtual drive $p as $v? (type capitalized 'yes' to confirm) " confirm 
-       echo
-       case $confirm in  
-         "YES") echo "Opening $p as $v" \
-               && sudo cryptsetup luksOpen $p $v \
-               && echo "Mounting $v as /mnt/pki/$v" \
-               && sudo mount "/dev/mapper/$v" "/mnt/pki/$v" ;; 
-         *) echo "Will not mount $v." ;; 
-       esac
-       if [ $? -eq 0 ] ; then
-	 echo "Successfully mounted $v."
-         date +%s > "/mnt/pki/$v/.last"
-       else
-	 echo "Failed with exit code $?."
-         echo "Attempting Rollback"
-         sudo umount "/mnt/pki/$v"
-         sudo cryptsetup luksClose $v
-       fi
-       echo "Completed with exit code $?."
-     else
-       echo "No mount point (/mnt/pki/$v) found."
-     fi
-   fi
-  done
-else
-  echo "Key repository not configured."
+if [ ! -d /home/pki/repo ] ; then
+  echo "[ERROR] key repository not configured."
+  exit 99
 fi
-cd
+if [ ! -d /home/pki/repo/.git ] ; then 
+  echo "[ERROR] No key repository setup"
+  exit 98
+fi
+if [ ! -d /mnt/pki/root ] ; then
+  echo "[ERROR] No mount point found."
+  exit 97
+fi
+if [ ! -f /home/pki/repo/root.evd ] ; then
+  echo "[ERROR] root PKI encrypted virtual disk not found"
+  exit 96
+fi
+
+
+echo "Updating ecrypted virtual drive in repository"
+CURRENT_DIR=$(pwd)
+cd /home/pki/repo
+git pull
+cd $CURRENT_DIR
+
+read -n4 -p "Decrypt and mount vault $name? (type capitalized 'yes' to confirm)> " confirm
+case $confirm in
+  "YES") echo "Decrypting /home/pki/repo/root.evd as root" \
+         && sudo cryptsetup luksOpen /home/pki/repo/root.evd root \
+         && echo "Mounting 'root' as /mnt/pki/root" \
+         && sudo mount /dev/mapper/root /mnt/pki/root
+         if [ $? -eq 0 ] ; then
+           echo "Successfully mounted root"
+           date
+           date +%s > "/mnt/pki/root/.last"
+         else
+           echo "Failed with exit code $?."
+           echo "Attempting Rollback"
+           sudo umount /mnt/pki/root
+           sudo cryptsetup luksClose root
+         fi
+  ;;
+  *) echo "Not mounting vault root"
+     exit 95
+  ;;
+esac
