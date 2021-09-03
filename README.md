@@ -1,8 +1,27 @@
-# pki Service
+# pki
 
-This is a docker container that works as certificated authority for all of services as web servers, ssh keys, etc. The idea 
-is to use an ecrypted virtual disk to hold all of the secure bits; (eventually) have a webserver that publishes all of the public bits; 
-an api/function/app that makes management easy and mostly pre-configured in the docker service setup. 
+This is an implementation of public key infrastructure implementation of a certificate authority (CA) for servers. This implementation uses an encrypted virtual disk to hold all of the secure bits.  Eventually, this should have a web front end for the public bits and overall management of the PKI. Currently, this is a series of scripts that allow for the manipulation of the CA in the encrypted disk.
+
+## Container
+
+### Versions
+
+This is a specific configuration of existing components and versioning is maintained through...
+
+### Manual
+
+#### Build
+```
+docker build --build-arg ALPINE_TAG=3.14.1 --file Containerfile --tag pki.dev .
+```
+
+#### Run
+
+To support encrypted virtual disks the container must use the `--privileged` flag.
+
+```
+docker run -i -t --privileged --name pki --rm pki:dev /bin/sh
+```
 
 ## Secure Vaults
 

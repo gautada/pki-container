@@ -8,7 +8,7 @@ else
   else
     echo "Create CA"
     export PKI_ROOT=/ca
-    easypki create --filename root --ca "Adam Thomas Gautier Personal Certificate Authority"
+    easypki create --filename ca --ca "Adam Thomas Gautier Personal Certificate Authority"
     echo "Create intermediate CA"
     easypki create --ca-name root --filename ca.gautier.org --intermediate "Certificate Authority for ca.gautier.org"
 fi
