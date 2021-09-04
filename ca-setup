@@ -1,18 +1,34 @@
 #!/bin/sh
 
-if [ -z "$PKI_ROOT" ] ; then
-  echo "Environment variable `PKI_ROOT` is not set"
-else
-  if [ -d $PKI_ROOT/ca ] ; then
-    echo "CA (directory) is already created"
-  else
-    echo "Create CA"
-    export PKI_ROOT=/ca
-    easypki create --filename root --ca "Adam Thomas Gautier Personal Certificate Authority"
-    echo "Create intermediate CA"
-    easypki create --ca-name root --filename ca.gautier.org --intermediate "Certificate Authority for ca.gautier.org"
+mkdir -p /opt/pki-data/ca
+if [ ! -f "/opt/pki-data/ca.vhd" ] ; then
+ echo "virtual hard drive does not exist, creating..."
+ dd if=/dev/urandom of=/opt/pki-data/ca.vhd bs=1M count=20
+ cryptsetup -y luksFormat /opt/pki-data/ca.vhd
+ echo "Opening encrypted virtual hard drive..."
+ sudo cryptsetup luksOpen /home/pki/ca.vhd ca.evhd
+ sudo mkfs.ext4 /dev/mapper/ca.evhd
+ chown pki:pki /opt/pki-data/ca
+ sudo mount /dev/mapper/ca.evhd /opt/pki-data/ca
+ df -h
+ sudo umount /opt/pki-data/ca
+ sudo cryptsetup luksClose ca.evhd
 fi
 
+
+# if [ -z "$PKI_ROOT" ] ; then
+#   echo "Environment variable `PKI_ROOT` is not set"
+# else
+#  if [ -d $PKI_ROOT/ca ] ; then
+#     echo "CA (directory) is already created"
+#   else
+#     echo "Create CA"
+#     export PKI_ROOT=/ca
+#     easypki create --filename root --ca "Adam Thomas Gautier Personal Certificate Authority"
+#     echo "Create intermediate CA"
+#     easypki create --ca-name root --filename ca.gautier.org --intermediate "Certificate Authority for ca.gautier.org"
+# fi
+#
 # mkdir -p $PKI_ROOT/ca
 # export PKI_ROOT=/ca
 # rm -rf /opt/docker/pki/vaults/root/* /opt/docker/pki/vaults/ca.gautier.org/*

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Script to run once on the first run to setup ca-root and ca vaults which will:
+# 1. create the vaults
+# 2. create the keys in the ca-root vault
+# 3. create the keys for ca
+# 4. Link the ca-root and ca together
+
+vault-setup ca-root
+vault-setup ca
+
+vault-mount ca-root
+vault-mount ca
+

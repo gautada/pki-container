@@ -1,12 +1,10 @@
 #!/bin/sh
 
-# 2021-01-12 Moving to the same setup as the massively simplified vault-mount
-
-mountpoint -q /mnt/pki/root
+mountpoint -q /mnt/ca
 if [ $? -eq 0 ] ; then
-  sudo umount /mnt/pki/root
+  sudo umount /mnt/ca
 fi
-if [ -e "/dev/mapper/root" ] ; then # check device exists
-   sudo cryptsetup luksClose root  
+if [ -e "/dev/mapper/ca.evhd" ] ; then # check device exists
+   sudo cryptsetup luksClose ca.evhd
 fi
 
