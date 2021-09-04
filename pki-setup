@@ -12,3 +12,7 @@ vault-setup ca
 vault-mount ca-root
 vault-mount ca
 
+# Create root
+easypki --root /mnt/ca-root create --filename root --ca "Adam Thomas Gautier Personal Certificate Authority"
+easypki --root /mnt/ca create --ca-name root --filename ca.gautier.local --intermediate "Certificate Authority for ca.gautier.local"
+

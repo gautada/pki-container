@@ -32,8 +32,9 @@ RUN addgroup $USER \
  && adduser -D -s /bin/sh -G $USER $USER \
  && echo "$USER:$USER" | chpasswd
 
-RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/umount,/sbin/cryptsetup,/sbin/mkfs.ext4,/bin/chown,/bin/chmod" >> /etc/sudoers \
+RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/umount,/sbin/cryptsetup,/sbin/mkfs.ext4,/bin/chown,/bin/chmod,/bin/mkdir" >> /etc/sudoers \
  && usermod -aG wheel $USER
+ 
 
 USER $USER
 

@@ -1,11 +1,14 @@
 #!/bin/sh
 
+# Creates vhd, encrypts into evhd, mounts, unmounts
+
 VAULT=$1
 echo "Confirm source location"
-mkdir -p /opt/pki-data
+sudo mkdir -p /opt/pki-data
+sudo chown pki:pki -R /opt/pki-data
 
 echo "Create mount point for vault($VAULT)"
-mkdir -p /mnt/$VAULT
+sudo mkdir -p /mnt/$VAULT
 
 if [ ! -f "/opt/pki-data/$VAULT.vhd" ] ; then
  echo "Creating virtual hard drive for vault($VAULT)"
@@ -24,12 +27,12 @@ if [ ! -f "/opt/pki-data/$VAULT.vhd" ] ; then
  sudo mount /dev/mapper/$VAULT.evhd /mnt/$VAULT
   
  echo "Foring ownership for vault($VAULT)"
- sudo chown -R pki:pki /mnt/ca
+ sudo chown -R pki:pki /mnt/$VAULT
  
  echo "Checking success for vault($VAULT)"
  df -h
  echo "- - - - -"
- sudo cryptsetup luksStatus $VAULT.evhd
+ sudo cryptsetup status $VAULT.evhd
  echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
  
  echo "Unmount vault($VAULT) from mount point"
