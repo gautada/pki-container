@@ -6,5 +6,5 @@ if [ -f $PKI_ROOT/ca.gautier.org/.last ] ; then
  date +%s > "$PKI_ROOT/ca.gautier.org/.last"
 fi 
 
-easypki crl --ca-name ca.gautier.org --expire 1 > $PKI_ROOT/ca.gautier.org/public/ca.gautier.org.crl
-chmod +rw $PKI_ROOT/ca.gautier.org/public/ca.gautier.org.crl
+# easypki crl --ca-name ca.gautier.org --expire 1 > $PKI_ROOT/ca.gautier.org/public/ca.gautier.org.crl
+# chmod +rw $PKI_ROOT/ca.gautier.org/public/ca.gautier.org.crl

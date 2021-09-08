@@ -1,12 +1,11 @@
 #!/bin/sh
-
-# mountpoint -q /mnt/ca
-# if [ $? -eq 0 ] ; then
-#   sudo umount /mnt/ca
-# fi
-# if [ -e "/dev/mapper/ca.evhd" ] ; then # check device exists
-#    sudo cryptsetup luksClose ca.evhd
-# fi
-
 VAULT=$1
-sudo umount $VAULT
+mountpoint -q /mnt/$VAULT
+if [ $? -eq 0 ] ; then
+  sudo umount /mnt/$VAULT
+fi
+sudo cryptsetup status $VAULT.evhd
+if [ $? -eq 0 ] ;  then # check device exists
+   sudo cryptsetup luksClose $VAULT.evhd
+fi
+

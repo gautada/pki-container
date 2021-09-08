@@ -1,12 +1,17 @@
 # pki
 
-This is an implementation of public key infrastructure implementation of a certificate authority (CA) for servers. This implementation uses an encrypted virtual disk to hold all of the secure bits.  Eventually, this should have a web front end for the public bits and overall management of the PKI. Currently, this is a series of scripts that allow for the manipulation of the CA in the encrypted disk.
+This is an implementation of public key infrastructure (PKI) implementation of a certificate authority (CA) for private/personal servers. This implementation uses an [encrypted virtual disk](https://gitlab.com/cryptsetup/cryptsetup) to hold all of the secure bits. Currently, this is a series of scripts, based on [easypki](https://github.com/google/easypki) that allow for the manipulation of the CA in the encrypted disk. Eventually, this should have a web front end for the public bits and overall management of the PKI. Additionally, this container contains the [certbot](https://certbot.eff.org) which provides certificates to be used publicly.
 
 ## Container
 
 ### Versions
 
-This is a specific configuration of existing components and versioning is maintained through...
+This is a specific configuration of existing components versioning should be mapped.
+
+crypsetup 
+easypki v1.1.0
+certbot v1.19.0
+
 
 ### Manual
 
@@ -150,4 +155,9 @@ Error with 10M container "https://superuser.com/questions/1557750/why-does-crypt
 Reference: https://wiki.alpinelinux.org/wiki/LVM_on_LUKS
 
 https://www.tutorialspoint.com/unix_commands/cryptsetup.htm
+
+
+- - - - - - - - - -
+
+certbot certonly -m adam@gautier.org --agree-tos --manual --preferred-challenges=dns -d *.gautier.org
 

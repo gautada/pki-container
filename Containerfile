@@ -8,6 +8,25 @@ RUN echo "America/New_York" > /etc/timezone
 
 FROM alpine:$ALPINE_TAG
 
+COPY --from=config-alpine /etc/localtime /etc/localtime
+COPY --from=config-alpine /etc/timezone  /etc/timezone
+
+# - - - - - - - - - - - -  CERTBOT - - - - - - - - -
+RUN apk add --no-cache --update build-base python3 py3-augeas py3-cryptography py3-pip
+RUN pip install --upgrade pip \
+ && pip install certbot \
+ && mkdir -p /var/log/letsencrypt /var/lib/letsencrypt \
+ && ln -s /mnt/ca/letsencrypt /etc/letsencrypt 
+
+# ARG USER=certbot
+# RUN addgroup $USER \
+#  && adduser -D -s /bin/sh -G $USER $USER \
+#  && echo "$USER:$USER" | chpasswd
+# RUN chown -R certbot:certbot /var/lib/nginx
+# COPY index.html /home/certbot/index.html
+# COPY nginx.conf /etc/nginx/nginx.conf
+
+# - - - - - - - - - - PKI - - - - - - - - -
 RUN apk add --no-cache e2fsprogs easypki cryptsetup git openssl sudo shadow nano
 
 COPY pki-setup /usr/bin/pki-setup
@@ -33,10 +52,11 @@ RUN addgroup $USER \
  && echo "$USER:$USER" | chpasswd
 
 RUN echo "%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/crond,/bin/mount,/bin/umount,/sbin/cryptsetup,/sbin/mkfs.ext4,/bin/chown,/bin/chmod,/bin/mkdir" >> /etc/sudoers \
- && usermod -aG wheel $USER
+ && usermod -aG wheel $USER \
+ && chown pki:pki -R /var/log/letsencrypt /var/lib/letsencrypt /etc/letsencrypt
  
-
 USER $USER
+
 
 # ln -s /usr/bin/vault-monitor /etc/periodic/15min/00-vault-monitor 
 # /usr/bin/vault-monitor
@@ -52,10 +72,4 @@ USER $USER
 #  && git config --global credential.helper store
 
 WORKDIR /home/pki
-
-
-# ENTRYPOINT ["/usr/bin/sudo", "/usr/sbin/crond", "-f"]
-
-
-
 

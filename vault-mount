@@ -50,5 +50,6 @@
 
 VAULT=$1
 sudo cryptsetup luksOpen /opt/pki-data/$VAULT.vhd $VAULT.evhd
-sudo mount $VAULT.evhd /mnt/$VAULT
+sudo mount /dev/mapper/$VAULT.evhd /mnt/$VAULT
+sudo chown -R pki:pki /mnt/$VAULT
 

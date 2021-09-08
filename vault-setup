@@ -35,11 +35,13 @@ if [ ! -f "/opt/pki-data/$VAULT.vhd" ] ; then
  sudo cryptsetup status $VAULT.evhd
  echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
  
- echo "Unmount vault($VAULT) from mount point"
- sudo umount /mnt/$VAULT
+ # echo "Config vault($VAULT)"
+ # mkdir -p /mnt/$VAULT/keys
+ # mkdir -p /mnt/$VAULT/certs
  
- echo "Close encrypted virtual hard drive for vault($VAULT)"
- sudo cryptsetup luksClose $VAULT.evhd
+  # echo "Unmount vault($VAULT) from mount point"
+  # vault-umount $VAULT
+  
 else
  echo "[ERROR] There is an existing virtual hard drive for vault($VAULT)"
 fi
