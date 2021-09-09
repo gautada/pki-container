@@ -31,18 +31,14 @@ if [ ! -f "/opt/pki-data/$VAULT.vhd" ] ; then
  
  echo "Checking success for vault($VAULT)"
  df -h
- echo "- - - - -"
- sudo cryptsetup status $VAULT.evhd
+ # echo "- - - - -"
+ # sudo cryptsetup status $VAULT.evhd
  echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
- 
- # echo "Config vault($VAULT)"
- # mkdir -p /mnt/$VAULT/keys
- # mkdir -p /mnt/$VAULT/certs
- 
-  # echo "Unmount vault($VAULT) from mount point"
-  # vault-umount $VAULT
-  
+ exit 0
 else
  echo "[ERROR] There is an existing virtual hard drive for vault($VAULT)"
+ exit 99
 fi
 
+# vault-umount ca-root
+# vault-umount ca

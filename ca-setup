@@ -1,19 +1,19 @@
 #!/bin/sh
 
-mkdir -p /opt/pki-data/ca
-if [ ! -f "/opt/pki-data/ca.vhd" ] ; then
- echo "virtual hard drive does not exist, creating..."
- dd if=/dev/urandom of=/opt/pki-data/ca.vhd bs=1M count=20
- cryptsetup -y luksFormat /opt/pki-data/ca.vhd
- echo "Opening encrypted virtual hard drive..."
- sudo cryptsetup luksOpen /home/pki/ca.vhd ca.evhd
- sudo mkfs.ext4 /dev/mapper/ca.evhd
- chown pki:pki /opt/pki-data/ca
- sudo mount /dev/mapper/ca.evhd /opt/pki-data/ca
- df -h
- sudo umount /opt/pki-data/ca
- sudo cryptsetup luksClose ca.evhd
-fi
+# mkdir -p /opt/pki-data/ca
+# if [ ! -f "/opt/pki-data/ca.vhd" ] ; then
+#  echo "virtual hard drive does not exist, creating..."
+#  dd if=/dev/urandom of=/opt/pki-data/ca.vhd bs=1M count=20
+#  cryptsetup -y luksFormat /opt/pki-data/ca.vhd
+#  echo "Opening encrypted virtual hard drive..."
+#  sudo cryptsetup luksOpen /home/pki/ca.vhd ca.evhd
+#  sudo mkfs.ext4 /dev/mapper/ca.evhd
+#  chown pki:pki /opt/pki-data/ca
+#  sudo mount /dev/mapper/ca.evhd /opt/pki-data/ca
+#  df -h
+#  sudo umount /opt/pki-data/ca
+#  sudo cryptsetup luksClose ca.evhd
+# fi
 
 
 # if [ -z "$PKI_ROOT" ] ; then

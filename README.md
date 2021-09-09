@@ -161,3 +161,6 @@ https://www.tutorialspoint.com/unix_commands/cryptsetup.htm
 
 certbot certonly -m adam@gautier.org --agree-tos --manual --preferred-challenges=dns -d *.gautier.org
 
+# mkdir -p /mnt/ca/public
+# cat /mnt/ca/ca.gautier.local/certs/ca.gautier.local.crt > /mnt/ca/public/ca.gautier.local.pem
+# easypki --root /mnt/ca create --ca-name ca.gautier.local --expire 3650 --dns test.gautier.local test.gautier.local

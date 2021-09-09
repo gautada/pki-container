@@ -9,4 +9,4 @@ cat $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/keys/$HOST.key > $VAULT_PATH/certs/$
 mv $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/.trash/$HOST.crt
 mv $VAULT_PATH/keys/$HOST.key $VAULT_PATH/.trash/$HOST.key
 
-/bin/ca-refresh
+/bin/vault-refresh ca

@@ -20,4 +20,4 @@ chmod +r-w $VAULT_PATH/public/clients@$HOST.pem
 openssl pkcs12 -export -inkey $VAULT_PATH/keys/$EMAIL.key -in $VAULT_PATH/certs/$EMAIL.crt -certfile $VAULT_PATH/public/ca.gautier.org.pem -out $VAULT_PATH/public/$EMAIL.pfx
 chmod +r-w $VAULT_PATH/public/$EMAIL.pfx
 
-/bin/ca-refresh
+/bin/vault-refresh ca

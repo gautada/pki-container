@@ -24,4 +24,4 @@ VAULT_PATH=/mnt/$VAULT/ca.gautier.local
 cat $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/certs/ca.gautier.local.crt > $VAULT_PATH/public/$HOST.pem
 chmod +r-w $VAULT_PATH/public/$HOST.pem
 
-
+/bin/vault-refresh ca
