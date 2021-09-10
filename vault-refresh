@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script updates the timestamp file to keep the vault open for 15 mins
+# This script updates the timestamp file refreshing the vaults keep alive tickers
 
 VAULT=$1
 

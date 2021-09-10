@@ -1,23 +1,22 @@
 #!/bin/sh
 
-# This script unmounts a vault that has not been updated in the last 5 minutes.  This
-# script is designed to run every 15 minutes
+# This script runs every 15 minutes to unmount a vault that has not been refreshed in the last 3 minutes.
 
-VAULT=$1
+unmount()
+{
+    VAULT=$1
+    if [ -f /mnt/$VAULT/.last ] ; then
+        MINUTES=3
+        TIMEOUT=$((($MINUTES * 60)))
+        LAST_TIMESTAMP=$(cat /mnt/$VAULT/.last)
+        CURRENT_TIMESTAMP=$(date +%s)
+        DELTA_TIMESTAMP=$((($CURRENT_TIMESTAMP - $LAST_TIMESTAMP)))
+        if [ 1 = $((($DELTA_TIMESTAMP > $TIMEOUT))) ] ; then
+            vault-umount $VAULT
+        fi
+    fi
+}
 
-# if [ ! -f /mnt/$VAULT/.last ] ; then
-# vault-umount $VAULT # Not mounted so just clean up
-# exit 99 # Quit with exit code but do nothing because not mounted
-# date +%s > /mnt/$VAULT/.last
-# fi
 
-if [ -f /mnt/$VAULT/.last ] ; then
- MINUTES=3
- TIMEOUT=$((($MINUTES * 60)))
- LAST_TIMESTAMP=$(cat /mnt/$VAULT/.last)
- CURRENT_TIMESTAMP=$(date +%s)
- DELTA_TIMESTAMP=$((($CURRENT_TIMESTAMP - $LAST_TIMESTAMP)))
- if [ 1 = $((($DELTA_TIMESTAMP > $TIMEOUT))) ] ; then
-  vault-umount $VAULT
- fi
-fi
+umount ca-root
+umount ca

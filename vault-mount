@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# A script to mount a vault
+# A script to mount a vault  this is interactive and will always required the password to be provided.
 
 VAULT=$1
 

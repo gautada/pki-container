@@ -1,3 +1,0 @@
-#!/bin/sh
-/usr/bin/vault-monitor ca-root
-/usr/bin/vault-monitor ca

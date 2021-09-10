@@ -28,16 +28,7 @@ To support encrypted virtual disks the container must use the `--privileged` fla
 docker run -i -t --privileged --name pki --rm pki:dev /bin/sh
 ```
 
-## Environment Variables
 
-```
-ENV PKI_ROOT=/home/pki/root
-ENV PKI_ORGANIZATION="Adam Gautier"
-ENV PKI_ORGANIZATIONAL_UNIT=Personal
-ENV PKI_COUNTRY=US
-ENV PKI_LOCALITY=Charlotte
-ENV PKI_PROVINCE="North Carolina"
-```
 
 ## Secure Vaults
 
@@ -113,32 +104,6 @@ sudo cryptsetup luksClose encryptedVolume
 
 
  
-## Certificate Authority
-
-The Ccertificate authoprity (CA) is setup and managed via [easypki(https://github.com/google/easypki/blob/master/README.md)].
-
-Build CA
-
-```
-easypki --root ~/certificates create --filename root --ca "Adam Thomas Gautier Personal Certificate Authority"
-mv ~/ca/root/keys/*.key /mnt/root.kvlt/
-```
-
-Build Intermediate CA
-
-```
-easypki --root ~/certificates create --ca-name root --filename ca.gautier.local --intermediate "Certificate Authority for ca.gautier.local"
-mv ~/ca/ca.gautier.local/keys/*.key /mnt/ca.gautier.local.kvlt/
-```
-
-Server Certificate
-
-
-
-Client Certificate
-
-Install Server Cert
-
 key => Server
 cert + intermediate => Server
 
@@ -159,8 +124,3 @@ https://www.tutorialspoint.com/unix_commands/cryptsetup.htm
 
 - - - - - - - - - -
 
-certbot certonly -m adam@gautier.org --agree-tos --manual --preferred-challenges=dns -d *.gautier.org
-
-# mkdir -p /mnt/ca/public
-# cat /mnt/ca/ca.gautier.local/certs/ca.gautier.local.crt > /mnt/ca/public/ca.gautier.local.pem
-# easypki --root /mnt/ca create --ca-name ca.gautier.local --expire 3650 --dns test.gautier.local test.gautier.local

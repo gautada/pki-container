@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Unmount the volume if needed and if needed unmount the device for the evhd
+# Unmount the volume if needed and if needed unmount the device for the evhd.
 
 VAULT=$1
 

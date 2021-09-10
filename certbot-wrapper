@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# certbot-wrapper: This is a mechanism for checking the values required to have a valid vault mounted so you can run the certbot.
+
+DOMAIN=$1
+
+if [ -z $VAULT_CA ] ; then
+ echo "[ERROR] - CA vault is not set"
+ exit 99
+fi
+
+if [ -z $CERTBOT_EMAIL ] ; then
+ echo "[ERROR] - Certbot email is not set"
+ exit 97
+fi
+
+if [ -z $HOVER_USERNAME ] ; then
+ echo "[ERROR] - Hover username is not set"
+ exit 96
+fi
+
+if [ -z $HOVER_PASSWORD ] ; then
+ echo "[ERROR] - Hover password is not set"
+ exit 95
+fi
+
+if [ -z $VAULT_TOKEN ] ; then
+ echo "[ERROR] - Vault token is not set"
+ exit 94
+fi
+
+sudo cryptsetup status ca.evhd
+if [ ! $? -eq 0 ] ;  then
+ echo -n "$VAULT_TOKEN" | sudo cryptsetup luksOpen /opt/pki-data/ca.vhd ca.evhd -d -
+fi
+
+if [ ! -f /mnt/ca/.last ] ; then
+ sudo mount /dev/mapper/ca.evhd /mnt/ca
+fi
+
+if [ ! -f /mnt/ca/.last ] ; then
+ echo "[ERROR] - CA vault is not mounted"
+ exit 98
+fi
+
+if [ ! -d /mnt/ca/ca.$DOMAIN ] ; then
+ sudo mkdir -p /mnt/ca/ca.$DOMAIN
+ sudo chown -R pki:pki /mnt/ca/ca.$DOMAIN
+fi
+
+/usr/bin/certbot certonly --agree-tos --config-dir=/mnt/ca/ca.$DOMAIN --email $CERTBOT_EMAIL --manual --manual-auth-hook=/usr/bin/hover-auth-hook --noninteractive --preferred-challenges=dns -d *.$DOMAIN
+
+
+
