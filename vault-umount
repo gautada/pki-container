@@ -1,12 +1,21 @@
 #!/bin/sh
 
-# 2021-01-12 Moving to the same setup as the massively simplified vault-mount
+# Unmount the volume if needed and if needed unmount the device for the evhd.
 
-mountpoint -q /mnt/pki/root
+VAULT=$1
+
+echo "Unmounting $VAULT..."
+mountpoint -q /mnt/$VAULT
 if [ $? -eq 0 ] ; then
-  sudo umount /mnt/pki/root
+  sudo umount /mnt/$VAULT
 fi
-if [ -e "/dev/mapper/root" ] ; then # check device exists
-   sudo cryptsetup luksClose root  
+sudo cryptsetup status $VAULT.evhd >> //dev/null
+RTN=$?
+if [ $RTN -eq 0 ] || [ $RTN -eq 4 ] ;  then # check device exists
+ sudo cryptsetup luksClose $VAULT.evhd
+else
+ echo $RTN
+ sudo cryptsetup status $VAULT.evhd
+ echo $?
 fi
 

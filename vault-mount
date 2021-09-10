@@ -1,49 +1,24 @@
 #!/bin/sh
 
-# 2021-01-12 Massive simplification
+# A script to mount a vault  this is interactive and will always required the password to be provided.
 
-if [ ! -d /home/pki/repo ] ; then
-  echo "[ERROR] key repository not configured."
-  exit 99
-fi
-if [ ! -d /home/pki/repo/.git ] ; then 
-  echo "[ERROR] No key repository setup"
-  exit 98
-fi
-if [ ! -d /mnt/pki/root ] ; then
-  echo "[ERROR] No mount point found."
-  exit 97
-fi
-if [ ! -f /home/pki/repo/root.evd ] ; then
-  echo "[ERROR] root PKI encrypted virtual disk not found"
-  exit 96
+VAULT=$1
+
+if [ ! -f /opt/pki-data/$VAULT.vhd ] ; then
+ echo "[ERROR] Virtual hard drive ($VAULT.vhd) not found."
+ exit 99
 fi
 
+sudo cryptsetup status $VAULT.evhd
+if [ ! $? -eq 0 ] ;  then # check device exists
+ sudo cryptsetup luksOpen /opt/pki-data/$VAULT.vhd $VAULT.evhd
+fi
 
-echo "Updating ecrypted virtual drive in repository"
-CURRENT_DIR=$(pwd)
-cd /home/pki/repo
-git pull
-cd $CURRENT_DIR
+if [ ! -f /mnt/$VAULT/.last ] ; then
+ sudo mount /dev/mapper/$VAULT.evhd /mnt/$VAULT
+ vault-refresh $VAULT
+fi
 
-read -n4 -p "Decrypt and mount vault $name? (type capitalized 'yes' to confirm)> " confirm
-case $confirm in
-  "YES") echo "Decrypting /home/pki/repo/root.evd as root" \
-         && sudo cryptsetup luksOpen /home/pki/repo/root.evd root \
-         && echo "Mounting 'root' as /mnt/pki/root" \
-         && sudo mount /dev/mapper/root /mnt/pki/root
-         if [ $? -eq 0 ] ; then
-           echo "Successfully mounted root"
-           date
-           date +%s > "/mnt/pki/root/.last"
-         else
-           echo "Failed with exit code $?."
-           echo "Attempting Rollback"
-           sudo umount /mnt/pki/root
-           sudo cryptsetup luksClose root
-         fi
-  ;;
-  *) echo "Not mounting vault root"
-     exit 95
-  ;;
-esac
+sudo chown -R pki:pki /mnt/$VAULT
+
+

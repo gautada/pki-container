@@ -1,14 +1,26 @@
 #!/bin/sh
 
 HOST=$1
-CA=ca.gautier.org
-VAULT_PATH="$PKI_ROOT/$CA"
+VAULT=ca
 
-mkdir -p $VAULT_PATH/public
-chmod 777 $VAULT_PATH/public
-easypki create --ca-name $CA --expire 3650 --dns $HOST $HOST
+/bin/vault-refresh $VAULT
 
-cat $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/public/ca.gautier.org.pem > $VAULT_PATH/public/$HOST.pem
-chmod +r-w $VAULT_PATH/public/$HOST.pem
-/bin/ca-refresh
+if [ ! -f /opt/pki-data/$VAULT.vhd ] ; then
+ echo "[ERROR] Virtual hard disk file does not exist"
+ exit 99
+fi
 
+sudo cryptsetup status $VAULT.evhd
+if [ $? -eq 0 ] ;  then # check device exists
+ echo "[ERROR] Encrypted hard drive status is unknown"
+ exit 98
+fi
+
+easypki --root /mnt/$VAULT create --ca-name ca.gautier.local --expire 3650 --dns $HOST $HOST
+
+# mkdir -p /mnt/$VAULT/public
+# VAULT_PATH=/mnt/$VAULT/ca.gautier.local
+# cat $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/certs/ca.gautier.local.crt > $VAULT_PATH/public/$HOST.pem
+# chmod +r-w $VAULT_PATH/public/$HOST.pem
+
+/bin/vault-refresh $VAULT
