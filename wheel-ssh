@@ -1,0 +1,4 @@
+%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/sshd
+%wheel         ALL = (ALL) NOPASSWD: /usr/bin/ssh-keygen
+
+

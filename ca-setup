@@ -1,0 +1,32 @@
+#!/bin/sh
+
+if [ -z "$PKI_ROOT" ] ; then
+  echo "Environment variable `PKI_ROOT` is not set"
+else
+  if [ -d $PKI_ROOT/ca ] ; then
+    echo "CA (directory) is already created"
+  else
+    echo "Create CA"
+    export PKI_ROOT=/ca
+    easypki create --filename ca --ca "Adam Thomas Gautier Personal Certificate Authority"
+    echo "Create intermediate CA"
+    easypki create --ca-name root --filename ca.gautier.org --intermediate "Certificate Authority for ca.gautier.org"
+fi
+
+# mkdir -p $PKI_ROOT/ca
+# export PKI_ROOT=/ca
+# rm -rf /opt/docker/pki/vaults/root/* /opt/docker/pki/vaults/ca.gautier.org/*
+# easypki create --filename root --ca "Adam Thomas Gautier Personal Certificate Authority"
+# easypki create --ca-name root --filename ca.gautier.org --intermediate "Certificate Authority for ca.gautier.org"
+# export PKI_ROOT=$ORIG_PKI_ROOT
+# cp -r /ca/root/* $PKI_ROOT/root/
+# cp -r /ca/ca.gautier.org/* $PKI_ROOT/ca.gautier.org/
+# rm -rf /ca
+# 
+# mkdir -p $PKI_ROOT/ca.gautier.org/public
+# cp $PKI_ROOT/root/certs/root.crt $PKI_ROOT/ca.gautier.org/public/root.pem
+# chmod +r-w $PKI_ROOT/ca.gautier.org/public/root.pem
+# cat $PKI_ROOT/ca.gautier.org/certs/ca.gautier.org.crt $PKI_ROOT/ca.gautier.org/public/root.pem > $PKI_ROOT/ca.gautier.org/public/ca.gautier.org.pem
+# chmod +r-w $PKI_ROOT/ca.gautier.org/public/ca.gautier.org.pem
+# 
+# /bin/ca-refresh

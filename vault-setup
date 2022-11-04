@@ -3,22 +3,22 @@
 # Creates vhd, encrypts into evhd, mounts, unmounts
 
 VAULT=$1
-echo "Confirm source location"
-sudo mkdir -p /opt/pki-data
-sudo chown pki:pki -R /opt/pki-data
+# echo "Confirm source location"
+# sudo mkdir -p /opt/pki
+# sudo chown pki:pki -R /opt/pki
 
 echo "Create mount point for vault($VAULT)"
 sudo mkdir -p /mnt/$VAULT
 
-if [ ! -f "/opt/pki-data/$VAULT.vhd" ] ; then
+if [ ! -f "/opt/pki/$VAULT.vhd" ] ; then
  echo "Creating virtual hard drive for vault($VAULT)"
- dd if=/dev/urandom of=/opt/pki-data/$VAULT.vhd bs=1M count=20
+ dd if=/dev/urandom of=/opt/pki/$VAULT.vhd bs=1M count=20
  
  echo "Encrypting virtual hard drive for vault($VAULT)"
- cryptsetup -y luksFormat /opt/pki-data/$VAULT.vhd
+ cryptsetup -y luksFormat /opt/pki/$VAULT.vhd
  
  echo "Opening encrypted virtual hard drive for $VAULT"
- sudo cryptsetup luksOpen /opt/pki-data/$VAULT.vhd $VAULT.evhd
+ sudo cryptsetup luksOpen /opt/pki/$VAULT.vhd $VAULT.evhd
  
  echo "Formating encrypted virtual hard drive for vault($VAULT)"
  sudo mkfs.ext4 /dev/mapper/$VAULT.evhd
