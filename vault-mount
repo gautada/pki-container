@@ -1,17 +1,17 @@
 #!/bin/sh
 
-# A script to mount a vault  this is interactive and will always required the password to be provided.
+# A script to mount a vault  this is interactive and will always require the password to be provided.
 
 VAULT=$1
 
-if [ ! -f /opt/pki-data/$VAULT.vhd ] ; then
+if [ ! -f /opt/pki/$VAULT.vhd ] ; then
  echo "[ERROR] Virtual hard drive ($VAULT.vhd) not found."
  exit 99
 fi
 
 sudo cryptsetup status $VAULT.evhd
 if [ ! $? -eq 0 ] ;  then # check device exists
- sudo cryptsetup luksOpen /opt/pki-data/$VAULT.vhd $VAULT.evhd
+ sudo cryptsetup luksOpen /opt/pki/$VAULT.vhd $VAULT.evhd
 fi
 
 if [ ! -f /mnt/$VAULT/.last ] ; then

@@ -12,12 +12,12 @@ if [ -z $1 ] ; then
  exit 99
 fi
 
-if [ -f /opt/pki-data/ca-root.vhd ] ; then
+if [ -f /opt/pki/ca-root.vhd ] ; then
  echo "[ERROR] CA-ROOT vault is already created"
  exit 98
 fi
 
-if [ -f /opt/pki-data/ca.vhd ] ; then
+if [ -f /opt/pki/ca.vhd ] ; then
  echo "[ERROR] CA vault is already created"
  exit 97
 fi

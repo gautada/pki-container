@@ -1,0 +1,7 @@
+%wheel         ALL = (ALL) NOPASSWD: /bin/chown
+%wheel         ALL = (ALL) NOPASSWD: /bin/chmod
+%wheel         ALL = (ALL) NOPASSWD: /bin/mkdir
+%wheel         ALL = (ALL) NOPASSWD: /bin/mount
+%wheel         ALL = (ALL) NOPASSWD: /bin/umount
+%wheel         ALL = (ALL) NOPASSWD: /sbin/cryptsetup
+%wheel         ALL = (ALL) NOPASSWD: /sbin/mkfs.ext4

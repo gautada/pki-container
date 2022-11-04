@@ -25,6 +25,9 @@ docker run -i -t --privileged --name pki --rm pki:dev /bin/sh
 ```
 =======
 
+
+openssl req -new -x509 -days 365 -key /mnt/ca/ca.gautier.org/keys/ca.gautier.org.key -out ca.gautier.org.crt 
+
 This is an implementation of public key infrastructure (PKI) implementation of a certificate authority (CA) for private/personal servers. This implementation uses an [encrypted virtual disk](https://gitlab.com/cryptsetup/cryptsetup) to hold all of the secure bits. Currently, this is a series of scripts, based on [easypki](https://github.com/google/easypki) that allow for the manipulation of the CA in the encrypted disk. Eventually, this should have a web front end for the public bits and overall management of the PKI. Additionally, this container contains the [certbot](https://certbot.eff.org) which provides certificates to be used publicly.
 
 ## Container
