@@ -66,12 +66,12 @@ were from ["How to Set Up Virtual Disk Encryption on GNU/Linux that Unlocks at B
 
 Create the Virtual Hard Disk (vhd)
 ```
-dd if=/dev/urandom of=/home/pki/test.vhd bs=1M count=20
+dd if=/dev/urandom of=/opt/pki/ca.vhd bs=1M count=20
 ```
 
 Encrypt the vhd to make Encrypted Virtual Hard Disk (evhd)
 ```
-sudo cryptsetup -y luksFormat /home/pki/test.vhd
+sudo cryptsetup -y luksFormat /home/pki/ca.vhd
 ```
 Response: Now you need to encrypt the vhd and provide the passphrase
 ```
@@ -87,7 +87,7 @@ Verify passphrase:
 `
 Open the encrypted vhd
 ```
-sudo cryptsetup luksOpen /home/pki/test.vhd test.evhd
+sudo cryptsetup luksOpen /home/pki/ca.vhd ca.evhd
 ```
 
 Validate the the encrypted vhd was opened and is an available device via

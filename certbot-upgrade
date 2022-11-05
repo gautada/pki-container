@@ -1,0 +1,5 @@
+#!/bin/ash
+
+# Monthly certbot upgrade
+sudo /usr/bin/pip install --upgrade pip
+sudo /usr/bin/pip install --upgrade certbot
