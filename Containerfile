@@ -73,7 +73,7 @@ RUN /bin/mkdir -p /opt/$USER /mnt/ca-root /mnt/ca \
  && /usr/sbin/addgroup $USER \
  && /usr/sbin/adduser -D -s /bin/ash -G $USER $USER \
  && /usr/sbin/usermod -aG wheel $USER \
- && /bin/echo "$USER:$USER" | chpasswd
+ && /bin/echo "$USER:$USER" | chpasswd \
  && /bin/chown $USER:$USER -R /opt/$USER /mnt/ca-root /mnt/ca
 USER $USER
 WORKDIR /home/$USER

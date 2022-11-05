@@ -1,25 +1,27 @@
 kind: pipeline
-type: kubernetes
-name: Continuous Integration
+type: exec
+name: Container Build - PKI
+
+platform:
+  os: linux
+  arch: arm64
 
 steps:
-- name: integrate
-  image: gautada/builder:v1.21.4_v3.2.3
-  privileged: true
+- name: build
   environment:
-    DOCKER_USERNAME:
-      from_secret: username.docker.io
-    DOCKER_PASSWORD:
-      from_secret: password.docker.io
-    ALPINE_TAG: 3.14.1
-    OCI_VERSION: v1.0.0
+    ALPINE_VERSION: 3.16.2
   commands:
-  - buildah login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD docker.io
-  - buildah bud --build-arg ALPINE_TAG=$ALPINE_TAG --tag pki:dev -f Containerfile
-  - buildah push localhost/pki:dev docker://docker.io/gautada/pki:$OCI_VERSION
-
-trigger:
-  branch:
-  - main
-  
-
+  - podman build --build-arg ALPINE_VERSION=$ALPINE_VERSION --file Containerfile --format docker --label revision="$(git rev-parse HEAD)" --label version="$(date +%Y.%m.%d)" --no-cache --tag pki:drone .
+- name: publish
+  environment:
+    ALPINE_VERSION: 3.16.2
+    DOCKERIO_USERNAME:
+      from_secret: username.docker.io
+    DOCKERIO_PASSWORD:
+      from_secret: password.docker.io
+  commands:
+   - podman tag pki:drone docker.io/$DOCKERIO_USERNAME/pki:$ALPINE_VERSION
+   - podman tag pki:drone docker.io/$DOCKERIO_USERNAME/pki:latest
+   - podman login --username=$DOCKERIO_USERNAME --password=$DOCKERIO_PASSWORD docker.io
+   - podman push docker.io/$DOCKERIO_USERNAME/pki:$ALPINE_VERSION
+   - podman push docker.io/$DOCKERIO_USERNAME/pki:latest
