@@ -14,14 +14,14 @@ steps:
   - podman build --build-arg ALPINE_VERSION=$ALPINE_VERSION --file Containerfile --format docker --label revision="$(git rev-parse HEAD)" --label version="$(date +%Y.%m.%d)" --no-cache --tag pki:drone .
 - name: publish
   environment:
-    ALPINE_VERSION: 3.16.2
+    PKI_VERSION: 1.0.0
     DOCKERIO_USERNAME:
       from_secret: username.docker.io
     DOCKERIO_PASSWORD:
       from_secret: password.docker.io
   commands:
-   - podman tag pki:drone docker.io/$DOCKERIO_USERNAME/pki:$ALPINE_VERSION
+   - podman tag pki:drone docker.io/$DOCKERIO_USERNAME/pki:$PKI_VERSION
    - podman tag pki:drone docker.io/$DOCKERIO_USERNAME/pki:latest
    - podman login --username=$DOCKERIO_USERNAME --password=$DOCKERIO_PASSWORD docker.io
-   - podman push docker.io/$DOCKERIO_USERNAME/pki:$ALPINE_VERSION
+   - podman push docker.io/$DOCKERIO_USERNAME/pki:$PKI_VERSION
    - podman push docker.io/$DOCKERIO_USERNAME/pki:latest
