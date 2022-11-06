@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/ash
 
 # Script to run once on the first run to setup ca-root and ca vaults which will:
 # 1. create the vaults
@@ -12,33 +12,22 @@ if [ -z $1 ] ; then
  exit 99
 fi
 
-if [ -f /opt/pki/ca-root.vhd ] ; then
- echo "[ERROR] CA-ROOT vault is already created"
- exit 98
-fi
-
-if [ -f /opt/pki/ca.vhd ] ; then
+if [ -f /opt/pki/$1.vhd ] ; then
  echo "[ERROR] CA vault is already created"
  exit 97
 fi
 
-vault-umount ca-root
-vault-setup ca-root
-date +%s > /mnt/ca-root/.last
+vault-umount $1
+vault-setup $1
+date +%s > /mnt/$1/.last
 
-vault-umount ca
-vault-setup ca
-date +%s > /mnt/ca/.last
 
-# Create ca-root and ca
-DOMAIN=$1
+# # Build CA
+# easypki --root /mnt/$1 create --filename root --ca "Personal Certificate Authority - $1"
+# # Build CA (Intermediate)
+# easypki --root /mnt/ca-root create --ca-name root --filename ca.$DOMAIN --intermediate "Certificate Authority for ca.$DOMAIN"
+# mv /mnt/ca-root/ca.$DOMAIN /mnt/ca/ca.$DOMAIN
 
-# Build CA
-easypki --root /mnt/ca-root create --filename root --ca "Personal Certificate Authority - $DOMAIN"
-# Build CA (Intermediate)
-easypki --root /mnt/ca-root create --ca-name root --filename ca.$DOMAIN --intermediate "Certificate Authority for ca.$DOMAIN"
-mv /mnt/ca-root/ca.$DOMAIN /mnt/ca/ca.$DOMAIN
-
-vault-umount ca-root
+vault-umount $1
 
 

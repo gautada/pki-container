@@ -66,12 +66,12 @@ were from ["How to Set Up Virtual Disk Encryption on GNU/Linux that Unlocks at B
 
 Create the Virtual Hard Disk (vhd)
 ```
-dd if=/dev/urandom of=/opt/pki/ca.vhd bs=1M count=20
+dd if=/dev/urandom of=/opt/pki/$VAULT.vhd bs=1M count=100    
 ```
 
 Encrypt the vhd to make Encrypted Virtual Hard Disk (evhd)
 ```
-sudo cryptsetup -y luksFormat /home/pki/ca.vhd
+sudo cryptsetup --type=luks2 --verify-passphrase luksFormat /opt/pki/ca.evhd
 ```
 Response: Now you need to encrypt the vhd and provide the passphrase
 ```
@@ -87,28 +87,28 @@ Verify passphrase:
 `
 Open the encrypted vhd
 ```
-sudo cryptsetup luksOpen /home/pki/ca.vhd ca.evhd
+sudo cryptsetup luksOpen /opt/pki/ca.evhd ca.vhd
 ```
 
 Validate the the encrypted vhd was opened and is an available device via
 ```
-ls -l /dev/mapper/test.evhd
+ls -l /dev/mapper/ca.vhd
 ```
 
 Or
 
 ```
-sudo cryptsetup -v status your_mapping_name
+sudo cryptsetup --verbose status ca.vhd
 ```
 
 Format the new device created by opening the encrypted vhd
 ```
-sudo mkfs.ext4 /dev/mapper/encryptedVolume
+sudo mkfs.ext4 /dev/mapper/ca.vhd
 ```
 
 Mount the device
 ```
-sudo mount /dev/mapper/encryptedVolume /mnt/encryptedVolume
+sudo mount /dev/mapper/ca.vhd /mnt/ca
 ```
 
 Check that everything works
@@ -118,17 +118,17 @@ df -h
 
 Change the owner of the files
 ```
-sudo chown mada /mnt/encryptedVolume
+sudo chown -R pki:pki /mnt/ca
 ```
 
 Unmount the device
 ```
-sudo umount /mnt/encryptedVolume
+sudo umount /mnt/ca
 ```
 
 Close the encrypted device
 ```
-sudo cryptsetup luksClose encryptedVolume
+sudo cryptsetup luksClose ca.vhd
 ```
 
 
