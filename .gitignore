@@ -8,3 +8,5 @@
 # Ignore and container runtime folders
 **-volume/
 
+/manifest
+
