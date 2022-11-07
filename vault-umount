@@ -2,14 +2,16 @@
 
 # vault-umount: Unmounts from mount point and closes the device placing back into secure encrypted state. This script should be fail safe and attemp to put the vault in the most secure state possible.
 
+MOUNT_POINT=/mnt/vault
+
 # echo "[INFO] Unmount vault"
-/bin/mountpoint -q /mnt/vault
+/bin/mountpoint -q $MOUNT_POINT
 if [ $? -eq 0 ] ; then
- /usr/bin/sudo /bin/umount /mnt/vault
+ /usr/bin/sudo /bin/umount $MOUNT_POINT
 else
- if [ -f /mnt/vault/.last ] ; then
+ if [ -f "$MOUNT_POINT/.last" ] ; then
   echo "[WARN] Forcing umount"
-  /usr/bin/sudo /bin/umount -f /mnt/vault
+  /usr/bin/sudo /bin/umount -f $MOUNT_POINT
  fi
 fi
 

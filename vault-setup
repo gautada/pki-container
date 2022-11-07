@@ -1,7 +1,8 @@
 #!/bin/sh
 
-# vault-setup: Creates the encrypted virtual hard disk for the vault and mounts the vault
-# to the default mount point then prints a status then unmounts the vault for security.
+# vault-setup: Creates the encrypted virtual hard disk for the vault and mounts the vault to the default mount point then creates a root certificate authority then unmounts the vault for security.
+
+MOUNT_POINT=/mnt/vault
 
 if [ ! -d "/mnt/vault" ] ; then
  echo "[ERROR] vault mount point(/mnt/vault) does not exists"
@@ -45,7 +46,7 @@ if [ ! $? -eq 0 ] ;  then
 fi
 
 echo "Set vault mount point ownership"
-/usr/bin/sudo chown pki:pki /mnt/vault
+/usr/bin/sudo chown pki:pki $MOUNT_POINT
 
 echo "Mount the vault"
 /usr/bin/vault-mount
@@ -54,13 +55,13 @@ if [ ! $RTN -eq 0 ] ;  then
  exit $RTN
 fi
 
-
-
-echo "Checking status of vault"
-/bin/df -h
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-ls -lh /mnt/vault
-echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+# echo "Checking status of vault"
+# /bin/df -h
+# echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+# ls -lh /mnt/ca
+# echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+echo "Create the Root CA"
+/usr/bin/easypki --root $MOUNT_POINT/ca create --filename root --ca "Root Certificate Authority"
 
 echo "Unmount the vault"
 /usr/bin/vault-umount
@@ -69,4 +70,6 @@ if [ ! $RTN -eq 0 ] ;  then
  exit $RTN
 fi
 
+echo "Removing vault setup script"
+rm -rf /usr/bin/vault-setup
 exit 0
