@@ -69,12 +69,12 @@ ARG UID=1001
 ARG GID=1001
 ARG USER=pki
 # VOLUME /opt/$USER
-RUN /bin/mkdir -p /opt/$USER /mnt/ca-root /mnt/ca \
- && /usr/sbin/addgroup $USER $GID \
+RUN /bin/mkdir -p /opt/$USER /mnt/ca \
+ && /usr/sbin/addgroup -g $GID $USER \
  && /usr/sbin/adduser -D -G $USER -s /bin/ash -u $UID $USER \
  && /usr/sbin/usermod -aG wheel $USER \
  && /bin/echo "$USER:$USER" | chpasswd \
- && /bin/chown $USER:$USER -R /opt/$USER /mnt/ca-root /mnt/ca
+ && /bin/chown $USER:$USER -R /opt/$USER /mnt/ca
 USER $USER
 WORKDIR /home/$USER
 
