@@ -1,7 +1,61 @@
-# pki
-<<<<<<< HEAD
+# PKI
 
-This is an implementation of public key infrastructure implementation of a certificate authority (CA) for servers. This implementation uses an encrypted virtual disk to hold all of the secure bits.  Eventually, this should have a web front end for the public bits and overall management of the PKI. Currently, this is a series of scripts that allow for the manipulation of the CA in the encrypted disk.
+## Abstract
+
+This is an implementation of Google's 'public key infrastructure API - [easyPKI](https://github.com/google/easypki) that intends to provide most of the components needed to manage a PKI, so you can either use the API in your automation, or use the CLI. The CLI can be accessed from as simple web terminal interface. This provides a private certificate authority. For public facing keys (i.e. Website certificates) the [Automatic Certificate Management Environment (ACME)](https://datatracker.ietf.org/doc/html/rfc8555) provides integration service with [certbot](https://certbot.eff.org) connecting to [Let's Encrypt](https://letsencrypt.org).
+
+Currently this container is mainly a set of scripts for administering the PKI/CA systems:
+
+- **pki-setup**: Creates the CA encrypted virtual hard disk (evhd) and makes sure the device is mounted.
+- **vault-setup**: Creates the **easypki** vaults for root and a domain (ca.domain.fqdn). 
+- **vault-mount**
+
+https://github.com/certbot/certbot
+
+
+```
+    @startuml
+    !include <C4/C4.puml>
+    !include <C4/C4_Context.puml>
+    !include <C4/C4_Container.puml>
+    !include <C4/C4_Component.puml>
+    !include <C4/C4_Dynamic.puml>
+    !include <C4/C4_Deployment.puml>
+
+    ' Boundary(alias, label, ?type, ?tags, $link)
+    ' Enterprise_Boundary(alias, label, ?tags, $link)
+    ' System_Boundary
+
+    ' Person{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+    ' System(alias, label, ?descr, ?sprite, ?tags, $link)
+
+    ' Component{Db|Queue_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+
+    Title PKI Container - Component Diagram
+
+    Boundary("DEVICE", "Anonymously Authenticated Device", "Laptop/Mobile Device") {
+     Person("USER", "Non-Authenticate User")
+     Component("CCERT", "Client Authetication Certificate", "certificate", "Client Authetication Certificate")
+    }
+    Boundary("PKI", "pki-container", "Container") {
+     Component("EPKI", "easypki", "API", "easyPKI scripts and API")
+     Boundary("MNT", "/mnt/ca", "Mountpoint") {
+      ComponentDb("CA", "Root CA", "ca", "Root Certificate Authority")
+      ComponentDb("DCA", "Domain CA", "ca.domain.fqdn", "Domain Certificate Authority")
+      ComponentDb("EVHD", "evhd", "/opt/pki/ca.evhd", "Encrypted(luks2) Virtual Hard Drive(evhd)")
+     }
+     Component("WTTY", "ettty", "TTY(Web)", "Web based TTY Interface")
+    }
+
+    Rel("EPKI", "CA", "Manage Keys")
+    Rel("EPKI", "DCA", "Manage Keys")
+    Rel("CA", "EVHD", "Store Keys")
+    Rel("DCA", "EVHD", "Store Keys")
+    Rel("USER", "WTTY", "Accesses")
+    Rel("WTTY", "EPKI", "Uses")
+    Rel("PKI", "CCERT", "Authenticates")
+    @enduml
+```
 
 ## Container
 

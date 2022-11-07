@@ -1,24 +1,49 @@
 #!/bin/sh
 
-# A script to mount a vault  this is interactive and will always require the password to be provided.
+# vault-mount: Opens the vault device (decrypts) and mounts to mount point.
 
-VAULT=$1
-
-if [ ! -f /opt/pki/$VAULT.vhd ] ; then
- echo "[ERROR] Virtual hard drive ($VAULT.vhd) not found."
- exit 99
+if [ ! -f "/opt/pki/vault.evhd" ] ; then
+ echo "[ERROR] Vault(/opt/pki/vault.evhd) not found."
+ exit 5
 fi
 
-sudo cryptsetup status $VAULT.evhd
-if [ ! $? -eq 0 ] ;  then # check device exists
- sudo cryptsetup luksOpen /opt/pki/$VAULT.vhd $VAULT.evhd
+# Check vault status
+STATUS="$(/usr/bin/sudo /sbin/cryptsetup status vault)"
+RTN=$?
+if [ $RTN -eq 0 ] ;  then
+ echo "[ERROR] Vault is already open."
+ echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+ echo "$STATUS"
+ exit 6
+fi
+if [ ! $RTN -eq 4 ] ;  then
+ echo "[ERROR] Vault status check failed."
+ echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+ echo "$RTN"
+ echo "$STATUS"
+ exit 7
 fi
 
-if [ ! -f /mnt/$VAULT/.last ] ; then
- sudo mount /dev/mapper/$VAULT.evhd /mnt/$VAULT
- vault-refresh $VAULT
+# Open Vault
+/usr/bin/sudo /sbin/cryptsetup luksOpen /opt/pki/vault.evhd vault
+if [ ! $? -eq 0 ] ;  then
+ echo "[ERROR] Unable to open vault(/opt/pki/vault.evhd)."
+ echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+ ls -l /dev/mapper
+ exit 8
 fi
 
-sudo chown -R pki:pki /mnt/$VAULT
+if [ ! -f /mnt/vault/.last ] ; then
+ /usr/bin/sudo /bin/mount /dev/mapper/vault /mnt/vault
+ if [ ! $? -eq 0 ] ;  then
+  echo "[ERROR] Unable to mount vault(/mnt/vault)."
+  exit 9
+ fi
+ # Force all files in vault to be owned by container users
+ /usr/bin/sudo chown -R pki:pki /mnt/vault
+ # Refresh the keep-alive ticker
+ /usr/bin/vault-refresh
+fi
+
 
 

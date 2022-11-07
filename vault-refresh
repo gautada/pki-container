@@ -1,9 +1,11 @@
 #!/bin/sh
 
-# This script updates the timestamp file refreshing the vaults keep alive tickers
+# vault-refresh: This script, called after vault operations, updates the timestamp file refreshing the vaults keep-alive ticker
 
-VAULT=$1
-
-if [ -f /mnt/$VAULT/.last ] ; then
- date +%s > /mnt/$VAULT/.last
+# Check the mount point force if needed
+/bin/mountpoint -q /mnt/vault
+if [ $? -eq 0 ] ; then
+ date +%s > /mnt/vault/.last
+else
+ echo "[ERROR] Vault(/opt/pki/vault.evhd) is not mounted(/mnt/vault)" >&2
 fi
