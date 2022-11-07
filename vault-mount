@@ -2,6 +2,8 @@
 
 # vault-mount: Opens the vault device (decrypts) and mounts to mount point.
 
+MOUNT_POINT=/mnt/vault
+
 if [ ! -f "/opt/pki/vault.evhd" ] ; then
  echo "[ERROR] Vault(/opt/pki/vault.evhd) not found."
  exit 5
@@ -33,17 +35,14 @@ if [ ! $? -eq 0 ] ;  then
  exit 8
 fi
 
-if [ ! -f /mnt/vault/.last ] ; then
- /usr/bin/sudo /bin/mount /dev/mapper/vault /mnt/vault
+if [ ! -f "$MOUNT_POINT/.last" ] ; then
+ /usr/bin/sudo /bin/mount /dev/mapper/vault $MOUNT_POINT
  if [ ! $? -eq 0 ] ;  then
-  echo "[ERROR] Unable to mount vault(/mnt/vault)."
+  echo "[ERROR] Unable to mount vault($MOUNT_POINT)."
   exit 9
  fi
  # Force all files in vault to be owned by container users
- /usr/bin/sudo chown -R pki:pki /mnt/vault
+ /usr/bin/sudo chown -R pki:pki $MOUNT_POINT
  # Refresh the keep-alive ticker
  /usr/bin/vault-refresh
 fi
-
-
-
