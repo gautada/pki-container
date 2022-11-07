@@ -1,40 +1,72 @@
 #!/bin/sh
 
-# Creates vhd, encrypts into evhd, mounts, unmounts
+# vault-setup: Creates the encrypted virtual hard disk for the vault and mounts the vault
+# to the default mount point then prints a status then unmounts the vault for security.
 
-VAULT=$1
-# echo "Confirm source location"
-# sudo mkdir -p /opt/pki
-# sudo chown pki:pki -R /opt/pki
-
-echo "Create mount point for vault($VAULT)"
-sudo mkdir -p /mnt/$VAULT
-
-if [ ! -f "/opt/pki/$VAULT.vhd" ] ; then
- echo "Creating virtual hard drive for vault($VAULT)"
- /bin/dd if=/dev/urandom of=/opt/pki/$VAULT.evhd bs=1M count=100
- 
- echo "Encrypting virtual hard drive for vault($VAULT)"
- /sbin/cryptsetup --type=luks2 --verify-passphrase luksFormat /opt/pki/$VAULT.evhd
- 
- echo "Opening encrypted virtual hard drive for $VAULT"
- /usr/bin/sudo /sbin/cryptsetup luksOpen /opt/pki/$VAULT.evhd $VAULT.vhd
- 
- echo "Formating encrypted virtual hard drive for vault($VAULT)"
-  /usr/bin/sudo /sbin/mkfs.ext4 /dev/mapper/$VAULT.evhd
- 
- echo "Mount vault($VAULT) into mount point"
- /usr/bin/sudo /bin/mount /dev/mapper/$VAULT.evhd /mnt/$VAULT
-  
- echo "Foring ownership for vault($VAULT)"
-  /usr/bin/sudo /bin/sudo chown -R pki:pki /mnt/$VAULT
- 
- echo "Checking success for vault($VAULT)"
- /bin/df -h
- echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
- /usr/bin/vault-refresh $VAULT
- exit 0
-else
- echo "[ERROR] There is an existing virtual hard drive for vault($VAULT)"
- exit 99
+if [ ! -d "/mnt/vault" ] ; then
+ echo "[ERROR] vault mount point(/mnt/vault) does not exists"
+ exit 1
 fi
+if [ -f "/opt/pki/vault.evhd" ] ; then
+ echo "[ERROR] Vault(/opt/pki/vault.evhd) previously setup"
+ exit 2
+fi
+
+echo "Creating virtual hard drive for vault"
+/bin/dd if=/dev/urandom of=/opt/pki/vault.evhd bs=1M count=100
+
+echo "Encrypting virtual hard drive for vault"
+/usr/bin/sudo /sbin/cryptsetup --type=luks2 --verify-passphrase luksFormat /opt/pki/vault.evhd
+
+echo "Open vault device"
+/usr/bin/sudo /sbin/cryptsetup luksOpen /opt/pki/vault.evhd vault
+if [ ! $? -eq 0 ] ;  then
+ echo "[ERROR] Unable to open vault(/opt/pki/vault.evhd)."
+ echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+ echo "3"
+ ls -l /dev/mapper
+ exit 3
+fi
+
+echo "Formating vault device"
+/usr/bin/sudo /sbin/mkfs.ext4 /dev/mapper/vault
+if [ ! $? -eq 0 ] ;  then
+ echo "[ERROR] Unable to format vault device(/dev/mapped/vault)."
+ echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+ ls -l /dev/mapper
+ exit 4
+fi
+
+echo "Close vault device"
+/usr/bin/sudo /sbin/cryptsetup luksClose vault
+if [ ! $? -eq 0 ] ;  then
+ echo "[ERROR] Unable to close the vault."
+ exit 5
+fi
+
+echo "Set vault mount point ownership"
+/usr/bin/sudo chown pki:pki /mnt/vault
+
+echo "Mount the vault"
+/usr/bin/vault-mount
+RTN=$?
+if [ ! $RTN -eq 0 ] ;  then
+ exit $RTN
+fi
+
+
+
+echo "Checking status of vault"
+/bin/df -h
+echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+ls -lh /mnt/vault
+echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+
+echo "Unmount the vault"
+/usr/bin/vault-umount
+RTN=$?
+if [ ! $RTN -eq 0 ] ;  then
+ exit $RTN
+fi
+
+exit 0
