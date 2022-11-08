@@ -1,0 +1,39 @@
+#!/bin/ash
+
+# domain-setup: Creates the intermediate certificate authority for a specific domain
+
+# echo "[INFO] Reset the vault (requires password)"
+/usr/bin/vault-umount
+/usr/bin/vault-mount
+
+# echo [INFO] Check parameters
+if [ -z $1 ] ; then
+ echo "[ERROR] Domain must be provided"
+ exit 1
+fi
+
+# echo "[INFO] Setup variables"
+DOMAIN=$1
+CA="ca.$DOMAIN"
+MOUNT_POINT="/mnt/vault"
+PKI_ROOT="$MOUNT_POINT/ca"
+INTER_CA="$PKI_ROOT/$CA"
+ROOT_CA="$PKI_ROOT/root"
+ROOT_CRT="$ROOT_CA/certs/root.crt"
+
+# echo "[INFO] Create intermediate certificate authority"
+/bin/mountpoint -q $MOUNT_POINT
+if [ $? -eq 0 ] ; then
+ if [ ! -f $ROOT_CRT ] ; then
+  echo "[ERROR] Root CA certifcate($ROOT_CRT) was not found"
+  exit 2
+ fi
+ cd $PKI_ROOT
+ /usr/bin/easypki --root $PKI_ROOT create --ca-name root --filename $CA --intermediate "Certificate Authority for $CA"
+ if [ $? -eq 0 ] ; then
+  echo "[INFO] Exporting $DOMAIN certificate."
+  echo "/bin/cat $ROOT_CRT $ROOT_CA/certs/$CA.crt > $INTER_CA/certs/$CA.crt"
+fi
+
+# echo "[INFO] Clean up the vault
+/usr/bin/vault-umount

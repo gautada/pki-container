@@ -68,5 +68,5 @@ if [ ! $RTN -eq 0 ] ;  then
 fi
 
 echo "Removing vault setup script"
-rm -rf /usr/bin/vault-setup
+/usr/bin/sudo /bin/rm /usr/bin/vault-setup
 exit 0
