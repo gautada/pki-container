@@ -37,12 +37,13 @@ COPY vault-setup /usr/bin/vault-setup
 COPY vault-mount /usr/bin/vault-mount
 COPY vault-umount /usr/bin/vault-umount
 COPY vault-refresh /usr/bin/vault-refresh
+COPY vault-monitor /usr/bin/vault-monitor
 COPY ca-server /usr/bin/ca-server
 COPY ca-client /usr/bin/ca-client
 COPY ca-revoke /usr/bin/ca-revoke
-COPY vault-monitor /etc/periodic/15min/vault-monitor
+RUN ln -s /usr/bin/vault-monitor /etc/periodic/15min/vault-monitor
 RUN update-ca-certificates \
- && /bin/mkdir -p /mnt/ca-root /mnt/ca /var/log/letsencrypt /var/lib/letsencrypt \
+ && /bin/mkdir -p /mnt/vault /var/log/letsencrypt /var/lib/letsencrypt \
  && /usr/bin/pip install --upgrade pip \
  && /usr/bin/pip install certbot
 # - - - CERTBOT - - -
@@ -69,12 +70,12 @@ ARG UID=1001
 ARG GID=1001
 ARG USER=pki
 # VOLUME /opt/$USER
-RUN /bin/mkdir -p /opt/$USER /mnt/ca \
+RUN /bin/mkdir -p /opt/$USER \
  && /usr/sbin/addgroup -g $GID $USER \
  && /usr/sbin/adduser -D -G $USER -s /bin/ash -u $UID $USER \
  && /usr/sbin/usermod -aG wheel $USER \
  && /bin/echo "$USER:$USER" | chpasswd \
- && /bin/chown $USER:$USER -R /opt/$USER /mnt/ca
+ && /bin/chown $USER:$USER -R /opt/$USER
 USER $USER
 WORKDIR /home/$USER
 

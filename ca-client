@@ -1,23 +1,50 @@
 #!/bin/sh
 
+# ca-cleint: Creates a client certificate/key pair for a specific certificate authroity.  To run `/usr/bin/ca-client user@domain.fqdn`.
+
+if [ -z $1 ] ; then
+ echo "[ERROR] Must include a host parameter"
+ exit 1
+fi
+
+/usr/bin/vault-refresh
+
 EMAIL=$1
 USER=$(echo "$EMAIL" | cut -d '@' -f 1)
 HOST=$(echo "$EMAIL" | cut -d '@' -f 2)
-CA=ca.gautier.org
-VAULT_PATH="$PKI_ROOT/$CA"
+CA="ca.$HOST"
+MOUNT_POINT="/mnt/vault"
+PKI_ROOT="$MOUINT_POINT/ca"
+CA_ROOT="$PKI_ROOT/$CA"
 
-mkdir -p "$VAULT_PATH/clients"
-easypki create --ca-name $CA --client --expire 3650 --email $EMAIL $EMAIL
-if ! [ -f "$VAULT_PATH/public/clients@$HOST.pem" ] ; then
- cat "$VAULT_PATH/public/ca.gautier.org.pem" > "$VAULT_PATH/public/clients@$HOST.pem"
+# Expiration is set to 10 years
+EXPIRE=3650
+
+
+/bin/mountpoint -q $MOUNT_POINT
+if [ $? -eq 0 ] ; then
+ if [ -d $CA_ROOT ] ; then
+  /usr/bin/easypki --root $PKI_ROOT create --ca-name $CA_ROOT --client --expire $EXPIRE --email $EMAIL $EMAIL
+ else
+  echo "[ERROR] Invalid CA($CA_ROOT)"
+  exit 2
+ fi
+else
+ echo "[ERROR] Vault is not mounted"
+ exit 3
 fi
-mkdir -p $VAULT_PATH/tmp
-cat "$VAULT_PATH/public/clients@$HOST.pem" > "$VAULT_PATH/tmp/clients@$HOST.tmp"
-cat "$VAULT_PATH/certs/$EMAIL.crt" "$VAULT_PATH/tmp/clients@$HOST.tmp" > "$VAULT_PATH/public/clients@$HOST.pem"
-rm -r "$VAULT_PATH/tmp"
-chmod +r-w $VAULT_PATH/public/clients@$HOST.pem
+/usr/bin/vault-refresh
 
-openssl pkcs12 -export -inkey $VAULT_PATH/keys/$EMAIL.key -in $VAULT_PATH/certs/$EMAIL.crt -certfile $VAULT_PATH/public/ca.gautier.org.pem -out $VAULT_PATH/public/$EMAIL.pfx
-chmod +r-w $VAULT_PATH/public/$EMAIL.pfx
-
-/bin/vault-refresh ca
+# /bin/mkdir -p "$CA_ROOT/clients" "$CA_ROOT/public" "$CA_ROOT/tmp"
+# This forms the basic of the export mechanism
+#  if [ ! -f "$CA_ROOT/public/clients@$HOST.pem" ] ; then
+#    cat "$VAULT_PATH/public/ca.gautier.org.pem" > "$VAULT_PATH/public/clients@$HOST.pem"
+# fi
+# cat "$VAULT_PATH/public/clients@$HOST.pem" > "$VAULT_PATH/tmp/clients@$HOST.tmp"
+# cat "$VAULT_PATH/certs/$EMAIL.crt" "$VAULT_PATH/tmp/clients@$HOST.tmp" > "$VAULT_PATH/public/clients@$HOST.pem"
+# rm -r "$VAULT_PATH/tmp"
+# chmod +r-w $VAULT_PATH/public/clients@$HOST.pem
+#
+# openssl pkcs12 -export -inkey $VAULT_PATH/keys/$EMAIL.key -in $VAULT_PATH/certs/$EMAIL.crt -certfile $VAULT_PATH/public/ca.gautier.org.pem -out $VAULT_PATH/public/$EMAIL.pfx
+# chmod +r-w $VAULT_PATH/public/$EMAIL.pfx
+#

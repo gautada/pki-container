@@ -4,6 +4,12 @@
 
 MOUNT_POINT=/mnt/vault
 
+if [ ! -d $MOUNT_POINT ] ; then
+ echo "[WARN] Creating mount poind"
+ /usr/bin/sudo /bin/mkdir -p $MOUNT_POINT
+ /usr/bin/sudo /bin/chown pki:pki $MOUNT_POINT
+fi
+
 if [ ! -f "/opt/pki/vault.evhd" ] ; then
  echo "[ERROR] Vault(/opt/pki/vault.evhd) not found."
  exit 5

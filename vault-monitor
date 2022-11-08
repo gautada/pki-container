@@ -10,11 +10,12 @@ if [ -f "$MOUNT_POINT/.last" ] ; then
  LAST_TIMESTAMP=$(cat $MOUNT_POINT/.last)
  CURRENT_TIMESTAMP=$(date +%s)
  DELTA_TIMESTAMP=$((($CURRENT_TIMESTAMP - $LAST_TIMESTAMP)))
- if [ 1 = $((($DELTA_TIMESTAMP > $TIMEOUT))) ] ; then
-  vault-umount $VAULT
- else
-
+ if [ 1 = $((($DELTA_TIMESTAMP < $TIMEOUT))) ] ; then
   REMAIN=$(date -u -d @$((($TIMEOUT - $DELTA_TIMESTAMP))) +"%T")
   echo "Vault will auto-lock in $REMAIN"
+  exit 0
  fi
 fi
+
+# This is the defualt mechanism to clean-up the vault to a secure point
+/usr/bin/vault-umount

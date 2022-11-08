@@ -2,15 +2,46 @@
 
 ## Abstract
 
-This is an implementation of Google's 'public key infrastructure API - [easyPKI](https://github.com/google/easypki) that intends to provide most of the components needed to manage a PKI, so you can either use the API in your automation, or use the CLI. The CLI can be accessed from as simple web terminal interface. This provides a private certificate authority. For public facing keys (i.e. Website certificates) the [Automatic Certificate Management Environment (ACME)](https://datatracker.ietf.org/doc/html/rfc8555) provides integration service with [certbot](https://certbot.eff.org) connecting to [Let's Encrypt](https://letsencrypt.org).
+This is an implementation of public key infrastructure (PKI) implementation of a certificate authority (CA) for private/personal servers. This implementation uses an [encrypted virtual disk](https://gitlab.com/cryptsetup/cryptsetup) to hold all of the secure bits. Currently, this is a series of scripts, based on [easypki](https://github.com/google/easypki) that allow for the manipulation of the CA in the encrypted disk. Eventually, this should have a web front end for the public bits and overall management of the PKI. Additionally, this container contains the [certbot](https://certbot.eff.org) which provides certificates to be used publicly.
 
-Currently this container is mainly a set of scripts for administering the PKI/CA systems:
+This container provides a private certificate authority(CA) through Google's 'public key infrastructure API - [easyPKI](https://github.com/google/easypki) that intends to provide most of the components needed to manage a PKI, so you can either use the API in your automation, or use the CLI. When public facing keys are needed (i.e. website certificates that need to be signed by a trusted cpublic ertificate authority) the [Automatic Certificate Management Environment (ACME)](https://datatracker.ietf.org/doc/html/rfc8555) provides integration service with [certbot](https://certbot.eff.org) connecting to [Let's Encrypt](https://letsencrypt.org). 
 
-- **pki-setup**: Creates the CA encrypted virtual hard disk (evhd) and makes sure the device is mounted.
-- **vault-setup**: Creates the **easypki** vaults for root and a domain (ca.domain.fqdn). 
-- **vault-mount**
+This container is mainly a collection of scripts that move to automate the CA/PKI management. The CLI can be accessed from a web terminal interface.
 
-https://github.com/certbot/certbot
+
+## Features
+
+### Secure Vault
+
+All data is stored in virtual hard disks(vhd) files. Once created these files are encrypted, then formatted and mounted. The instructions used were from "[How to Set Up Virtual Disk Encryption on GNU/Linux that Unlocks at Boot](https://leewc.com/articles/how-to-set-up-virtual-disk-encryption-linux/)". To run in a container the `--privileged` flag must be used because the encryption uses a loopback device.
+
+### Scripts
+
+Scripts are divided into three main segments:
+
+#### Vault
+ 
+- **vault-setup**: Creates the certificate authority(CA) in an encrypted virtual hard disk (evhd) and makes sure the device can be mounted.  After infrastructure setup this script creates the root CA in the vault unmounts the vault to leave it in a secure state.  
+- **vault-mount**: Mounts an existing evhd vault to /mnt/vault
+- **vault-umount**: Unmounts the vault and closes the device leaving the vault in as a secure a state as possible.
+- **vault-refresh**: Update the /mnt/vault/.last file with a epoch timestamp. This only works if the vault is mounted. This timestamp is used as the keep-alive ticker.
+- **vault-monitor**: Script that runs every 15min using `crond`. This script tests the keep-alive ticker and will default to calling `vault-umount`.
+
+#### CA/PKI
+
+- **domain-setup**: Creates and intermediate CA for a specific domain.
+- **ca-client**:
+- **ca-server**:
+- **ca-revoke**:
+
+#### Public PKI
+
+- **certbot-wrapper**:
+- **certbot-upgrade**:
+- **auth-hook**:
+- **hover-auth-hook**:
+
+
 
 
 ```
@@ -57,145 +88,8 @@ https://github.com/certbot/certbot
     @enduml
 ```
 
-## Container
 
-### Versions
-
-This is a specific configuration of existing components and versioning is maintained through...
-
-### Manual
-
-#### Build
-```
-docker build --build-arg ALPINE_TAG=3.14.1 --file Containerfile --tag pki.dev .
-```
-
-#### Run
-
-To support encrypted virtual disks the container must use the `--privileged` flag.
-
-```
-docker run -i -t --privileged --name pki --rm pki:dev /bin/sh
-```
-=======
-
-
-openssl req -new -x509 -days 365 -key /mnt/ca/ca.gautier.org/keys/ca.gautier.org.key -out ca.gautier.org.crt 
-
-This is an implementation of public key infrastructure (PKI) implementation of a certificate authority (CA) for private/personal servers. This implementation uses an [encrypted virtual disk](https://gitlab.com/cryptsetup/cryptsetup) to hold all of the secure bits. Currently, this is a series of scripts, based on [easypki](https://github.com/google/easypki) that allow for the manipulation of the CA in the encrypted disk. Eventually, this should have a web front end for the public bits and overall management of the PKI. Additionally, this container contains the [certbot](https://certbot.eff.org) which provides certificates to be used publicly.
-
-## Container
-
-### Versions
-
-This is a specific configuration of existing components versioning should be mapped.
-
-crypsetup 
-easypki v1.1.0
-certbot v1.19.0
-
-
-### Manual
-
-#### Build
-```
-docker build --build-arg ALPINE_TAG=3.14.1 --file Containerfile --tag pki.dev .
-```
-
-#### Run
-
-To support encrypted virtual disks the container must use the `--privileged` flag.
-
-```
-docker run -i -t --privileged --name pki --rm pki:dev /bin/sh
-```
-
-
->>>>>>> dev
-
-## Secure Vaults
-
-All data is stored in virtual hard disks(vhd) files.  Once created these files are encrypted, then formatted and mounted. The instructions used 
-were from ["How to Set Up Virtual Disk Encryption on GNU/Linux that Unlocks at Boot"(https://leewc.com/articles/how-to-set-up-virtual-disk-encryption-linux/)].
-
-Create the Virtual Hard Disk (vhd)
-```
-dd if=/dev/urandom of=/opt/pki/$VAULT.vhd bs=1M count=100    
-```
-
-Encrypt the vhd to make Encrypted Virtual Hard Disk (evhd)
-```
-sudo cryptsetup --type=luks2 --verify-passphrase luksFormat /opt/pki/ca.evhd
-```
-Response: Now you need to encrypt the vhd and provide the passphrase
-```
-WARNING!
-========
-This will overwrite data on /home/pki/test.vhd irrevocably.
-
-Are you sure? (Type 'yes' in capital letters): YES
-Enter passphrase for /home/pki/test.vhd: 
-Verify passphrase: 
-```
-
-`
-Open the encrypted vhd
-```
-sudo cryptsetup luksOpen /opt/pki/ca.evhd ca.vhd
-```
-
-Validate the the encrypted vhd was opened and is an available device via
-```
-ls -l /dev/mapper/ca.vhd
-```
-
-Or
-
-```
-sudo cryptsetup --verbose status ca.vhd
-```
-
-Format the new device created by opening the encrypted vhd
-```
-sudo mkfs.ext4 /dev/mapper/ca.vhd
-```
-
-Mount the device
-```
-sudo mount /dev/mapper/ca.vhd /mnt/ca
-```
-
-Check that everything works
-```
-df -h
-```
-
-Change the owner of the files
-```
-sudo chown -R pki:pki /mnt/ca
-```
-
-Unmount the device
-```
-sudo umount /mnt/ca
-```
-
-Close the encrypted device
-```
-sudo cryptsetup luksClose ca.vhd
-```
-
-
- 
-key => Server
-cert + intermediate => Server
-
-Client Cert
-ca bundle
-cert + key = cert
-
-
-Docker needs to be --privilaged
+Must be privileged --privilaged
 
 Notes: 
 
