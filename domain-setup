@@ -2,13 +2,18 @@
 
 # domain-setup: Creates the intermediate certificate authority for a specific domain
 
-MOUNT_POINT=/mnt/vault
 DOMAIN=$1
+
+CA="ca.$DOMAIN"
+MOUNT_POINT="/mnt/vault"
+PKI_ROOT="$MOUNT_POINT/ca"
+CA_ROOT="$PKI_ROOT/$CA"
 
 # echo "[INFO] Unmount vault"
 /bin/mountpoint -q $MOUNT_POINT
 if [ $? -eq 0 ] ; then
- cd $MOUNT_POINT/ca
- /usr/bin/easypki --root $MOUNT_POINT/ca create --ca-name root --filename ca.$DOMAIN --intermediate "Certificate Authority for ca.$DOMAIN"
+ cd $PKI_ROOT
+ /usr/bin/easypki --root $PKI_ROOT create --ca-name root --filename $CA --intermediate "Certificate Authority for $CA"
+ echo "/bin/cat $PKI_ROOT/root/certs/root.crt $PKI_ROOT/root/certs/$CA.crt > $PKI_ROOT/$CA/certs/$CA.crt"
 fi
 
