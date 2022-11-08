@@ -7,14 +7,17 @@ if [ -z $1 ] ; then
  exit 1
 fi
 
-/usr/bin/vault-refresh
+vault-umount
+vault-mount
 
 HOST=$1
-HORT_NAME="$(/bin/echo "$HOST" | cut -d '.' -f 1)"
-DOMAIN="$(/bin/echo "$HOST" | cut -d '.' -f 2)"
-TLD="$(/bin/echo "$HOST" | cut -d '.' -f 3)"
-DOMAIN_NAME="$DOMAIN.$TLD"
-CA="ca.$DOMAIN_NAME"
+DOMAIN="$(/opt/pki/scripts/fqdn-parser $HOST)"
+if [ ! $? -eq 0 ] ; then
+ echo "$DOMAIN"
+ exit 2
+fi
+
+CA="ca.$DOMAIN"
 MOUNT_POINT="/mnt/vault"
 PKI_ROOT="$MOUNT_POINT/ca"
 CA_ROOT="$PKI_ROOT/$CA"
@@ -25,7 +28,7 @@ EXPIRE=3650
 /bin/mountpoint -q $MOUNT_POINT
 if [ $? -eq 0 ] ; then
  if [ -d $CA_ROOT ] ; then
-  /usr/bin/easypki --root $PKI_ROOT create --ca-name $CA --expire $EXPIRE --dns $HOST $HOST
+  /usr/bin/easypki --root $PKI_ROOT create --ca-name $CA --expire $EXPIRE --dns $DOMAIN $DOMAIN
  else
   echo "[ERROR] Invalid CA($CA_ROOT)"
   exit 2
@@ -35,6 +38,7 @@ else
  exit 3
 fi
 
+vault-umount
 
 # This should form the basis of the export function
 # /bin/mkdir -p $CA_ROOT/public
@@ -45,4 +49,4 @@ fi
 # cat $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/certs/ca.gautier.local.crt > $VAULT_PATH/public/$HOST.pem
 # chmod +r-w $VAULT_PATH/public/$HOST.pem
 
-/usr/bin/vault-refresh
+# /usr/bin/vault-refresh

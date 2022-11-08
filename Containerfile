@@ -42,6 +42,7 @@ RUN apk add --no-cache --update build-base e2fsprogs easypki cryptsetup git npm 
 # COPY ca-client /usr/bin/ca-client
 # COPY ca-revoke /usr/bin/ca-revoke
 # COPY pki-export /usr/bin/pki-export
+# COPY fqdn-parser /usr/bin/fqdn-parser
 RUN ln -s /opt/pki/scripts/vault-domain-setup /usr/bin/vault-domain-setup \
  && ln -s /opt/pki/scripts/vault-setup /usr/bin/vault-setup \
  && ln -s /opt/pki/scripts/vault-mount /usr/bin/vault-mount \
@@ -51,7 +52,8 @@ RUN ln -s /opt/pki/scripts/vault-domain-setup /usr/bin/vault-domain-setup \
  && ln -s /opt/pki/scripts/ca-server /usr/bin/ca-server \
  && ln -s /opt/pki/scripts/ca-client /usr/bin/ca-client \
  && ln -s /opt/pki/scripts/ca-revoke /usr/bin/ca-revoke \
- && ln -s /opt/pki/scripts/pki-export /usr/bin/pki-export
+ && ln -s /opt/pki/scripts/pki-export /usr/bin/pki-export \
+ && ln -s /opt/pki/scripts/fqdn-parser /usr/bin/fqdn-parser
  
 RUN ln -s /usr/bin/vault-monitor /etc/periodic/15min/vault-monitor
 RUN update-ca-certificates \

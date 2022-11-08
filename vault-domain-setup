@@ -29,10 +29,15 @@ if [ $? -eq 0 ] ; then
   exit 2
  fi
  cd $PKI_ROOT
- /usr/bin/easypki --root $PKI_ROOT create --ca-name root --filename $CA --intermediate "Certificate Authority for $CA"
+ /usr/bin/easypki --root $PKI_ROOT create --ca-name root --filename $CA --intermediate "Certificate Authority for $DOMAIN"
+ if [ ! -d $INTER_CA/pems ] ; then
+  /bin/mkdir -p $INTER_CA/pems
+ fi
  if [ $? -eq 0 ] ; then
-  echo "[INFO] Exporting $DOMAIN certificate."
-  echo "/bin/cat $ROOT_CRT $ROOT_CA/certs/$CA.crt > $INTER_CA/certs/$CA.crt"
+  echo "[INFO] Creating certificate chain ROOT -->  $DOMAIN."
+  /bin/cat $ROOT_CRT $ROOT_CA/certs/$CA.crt > $INTER_CA/pems/$CA.pem
+ fi
+ cd /home/pki
 fi
 
 # echo "[INFO] Clean up the vault

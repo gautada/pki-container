@@ -22,5 +22,7 @@ if [ ! $? -eq 4 ] ; then
 fi
 
 # echo [INFO] Clean up mount point
-if [ -d $MOUNT_POINT ] ; then
+/bin/mountpoint -q $MOUNT_POINT
+if [ $? -eq 1 ] ; then
  /usr/bin/sudo rm -rf $MOUNT_POINT
+fi

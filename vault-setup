@@ -5,8 +5,8 @@
 MOUNT_POINT=/mnt/vault
 
 if [ ! -d "/mnt/vault" ] ; then
- echo "[ERROR] vault mount point(/mnt/vault) does not exists"
- exit 1
+ echo "[WARN] vault mount point(/mnt/vault) does not exists"
+ /usr/bin/sudo /bin/mkdir -p /mnt/vault
 fi
 if [ -f "/opt/pki/vault.evhd" ] ; then
  echo "[ERROR] Vault(/opt/pki/vault.evhd) previously setup"
@@ -58,7 +58,12 @@ fi
 # ls -lh /mnt/ca
 # echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 echo "Create the Root CA"
+cd $MOUNT_POINT
+if [ ! -d $MOUNT_POINT/ca ] ; then
+ /bin/mkdir -p $MOUNT_POINT/ca
+fi
 /usr/bin/easypki --root $MOUNT_POINT/ca create --filename root --ca "Root Certificate Authority"
+cd /home/pki
 
 echo "Unmount the vault"
 /usr/bin/vault-umount
@@ -67,6 +72,8 @@ if [ ! $RTN -eq 0 ] ;  then
  exit $RTN
 fi
 
-echo "Removing vault setup script"
-/usr/bin/sudo /bin/rm /usr/bin/vault-setup
+if [ -f /usr/bin/vault-setup ] ; then
+ echo "[INFO] Removing vault setup script"
+ /usr/bin/sudo /bin/rm /usr/bin/vault-setup
+fi
 exit 0

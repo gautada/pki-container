@@ -7,7 +7,8 @@ if [ -z $1 ] ; then
  exit 1
 fi
 
-/usr/bin/vault-refresh
+/usr/bin/vault-umount
+/usr/bin/vault-mount
 
 EMAIL=$1
 USER=$(echo "$EMAIL" | cut -d '@' -f 1)
@@ -20,14 +21,37 @@ CA_ROOT="$PKI_ROOT/$CA"
 # Expiration is set to 10 years
 EXPIRE=3650
 
-
-
 /bin/mountpoint -q $MOUNT_POINT
 if [ $? -eq 0 ] ; then
  if [ -d $CA_ROOT ] ; then
   /usr/bin/easypki --root $PKI_ROOT create --ca-name $CA --client --expire $EXPIRE --email $EMAIL $EMAIL
 
+  OUT_FILE=$CA_ROOT/pems/$EMAIL.pem
+  if [ -f "$OUT_FILE" ] ; then
+   echo "[ERROR] PEM($OUT_FILE) already exists"
+   exit 2 
   fi
+  
+  KEY_FILE=$CA_ROOT/keys/$EMAIL.key
+  if [ ! -f "$KEY_FILE" ] ; then
+   echo "[ERROR] key file($KEY_FILE) not found"
+   exit 2 
+  fi
+
+  CERT_FILE=$CA_ROOT/certs/$EMAIL.crt
+  if [ ! -f "$CERT_FILE" ] ; then
+   echo "[ERROR] Certificate file($CERT_FILE) not found"
+   exit 2 
+  fi
+
+  CHAIN_FILE=$CA_ROOT/certs/$CA.crt
+  if [ ! -f "$CHAIN_FILE" ] ; then
+   echo "[ERROR] Certificate file($CHAIN_FILE) not found"
+   exit 2 
+  fi
+
+  # /usr/bin/openssl pkcs12 -export -inkey $KEY_FILE -in $CERT_FILE -certfile $CHAIN_FILE -out $OUT_FILE
+  /bin/cat $PKI_ROOT/root/certs/root.crt $PKI_ROOT/root/certs/$CA.crt $CA_ROOT/certs/$EMAIL.crt > $CA_ROOT/pems/$EMAIL.pem
  else
   echo "[ERROR] Invalid CA($CA_ROOT)"
   exit 2
@@ -36,7 +60,9 @@ else
  echo "[ERROR] Vault is not mounted"
  exit 3
 fi
-/usr/bin/vault-refresh
+/usr/bin/vault-umount
+
+# /usr/bin/vault-refresh
 
 # /bin/mkdir -p "$CA_ROOT/clients" "$CA_ROOT/public" "$CA_ROOT/tmp"
 # This forms the basic of the export mechanism
