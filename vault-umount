@@ -21,3 +21,6 @@ if [ ! $? -eq 4 ] ; then
  /usr/bin/sudo /sbin/cryptsetup luksClose vault
 fi
 
+# echo [INFO] Clean up mount point
+if [ -d $MOUNT_POINT ] ; then
+ /usr/bin/sudo rm -rf $MOUNT_POINT

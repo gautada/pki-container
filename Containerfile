@@ -32,7 +32,7 @@ RUN apk add --no-cache --update build-base e2fsprogs easypki cryptsetup git npm 
 # ╭――――――――――――――――――――╮
 # │ CONFIGURE          │
 # ╰――――――――――――――――――――╯
-COPY domain-setup /usr/bin/domain-setup
+COPY vault-domain-setup /usr/bin/vault-domain-setup
 COPY vault-setup /usr/bin/vault-setup
 COPY vault-mount /usr/bin/vault-mount
 COPY vault-umount /usr/bin/vault-umount
