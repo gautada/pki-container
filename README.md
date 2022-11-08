@@ -15,6 +15,9 @@ This container is mainly a collection of scripts that move to automate the CA/PK
 
 All data is stored in virtual hard disks(vhd) files. Once created these files are encrypted, then formatted and mounted. The instructions used were from "[How to Set Up Virtual Disk Encryption on GNU/Linux that Unlocks at Boot](https://leewc.com/articles/how-to-set-up-virtual-disk-encryption-linux/)". To run in a container the `--privileged` flag must be used because the encryption uses a loopback device.
 
+### Export Feature
+
+A PKCS#12 or .pfx file is a file which contains both private key and X.509 certificate, ready to be installed by the customer into servers such as IIS, Tomkat or Exchange. The script `pki-export` produces a password protected `.pfx` file to `/opt/pki/outbox`.
 ### Scripts
 
 Scripts are divided into three main segments:
@@ -33,6 +36,7 @@ Scripts are divided into three main segments:
 - **ca-client**:
 - **ca-server**:
 - **ca-revoke**:
+- **export-pki**
 
 #### Public PKI
 
@@ -43,7 +47,8 @@ Scripts are divided into three main segments:
 
 
 
-
+ kubectl create secret generic ca-secret --from-file=tls.crt=server.crt --from-file=tls.key=server.key --from-file=ca.crt=ca.crt
+ 
 ```
     @startuml
     !include <C4/C4.puml>

@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# pki-export: Converts the certificate/key combination to pfx
+
+if [ -z $1 ] ; then
+ echo "[ERROR] Target must be provided"
+ exit 1
+fi
+
+
+TARGET=$1
+TMP="${TARGET%%@*}"
+# echo "${#TMP} -- ${#target}"
+if [ ${#TMP} -lt ${#TARGET} ] ; then
+ USER="$(/bin/echo "$TARGET" | cut -d '@' -f 1)"
+ DOMAIN_NAME="$(/bin/echo "$TARGET" | cut -d '@' -f 2)"
+else
+ HORT_NAME="$(/bin/echo "$TARGET" | cut -d '.' -f 1)"
+ DOMAIN="$(/bin/echo "$TARGET" | cut -d '.' -f 2)"
+ TLD="$(/bin/echo "$TARGET" | cut -d '.' -f 3)"
+ DOMAIN_NAME="$DOMAIN.$TLD"
+fi
+
+CA="ca.$DOMAIN_NAME"
+MOUNT_POINT="/mnt/vault"
+PKI_ROOT="$MOUNT_POINT/ca"
+CA_ROOT="$PKI_ROOT/$CA"
+
+# echo "$TARGET: $DOMAIN_NAME, $CA, $CA_ROOT"
+# exit 99
+# - - - - - - - - - - - - - - - - - - -
+
+OUT_BOX="/opt/pki/outbox"
+OUT_FILE="$OUTBOX/$TARGET.pfx"
+
+if [ ! -f  $OUT_FILE ] ; then
+ KEY="$CA_ROOT/keys/$TARGET.key"
+ if [ ! -f $KEY ] ; then
+  echo "[ERROR] Missing file($KEY)"
+  exit 2
+ fi
+  CERT="$CA_ROOT/certs/$TARGET.crt"
+ if [ ! -f $CERT ] ; then
+  echo "[ERROR] Missing file($CERT)"
+  exit 2
+ fi
+ CA_CERT="$CA_ROOT/certs/$CA.crt"
+ if [ ! -f $CA_CERT ] ; then
+  echo "[ERROR] Missing file($CA_CERT)"
+  exit 2
+ fi
+ /usr/bin/openssl pkcs12 -export -out $OUT_FILE -inkey $KEY  -in $CERT  -certfile $CA_CERT
+else:
+ echo "[ERROR] PFX($OUT_FILE) already exists"
+ exit 3
+fi

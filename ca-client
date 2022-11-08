@@ -3,7 +3,7 @@
 # ca-cleint: Creates a client certificate/key pair for a specific certificate authroity.  To run `/usr/bin/ca-client user@domain.fqdn`.
 
 if [ -z $1 ] ; then
- echo "[ERROR] Must include a host parameter"
+ echo "[ERROR] Must include a email parameter"
  exit 1
 fi
 
@@ -14,17 +14,20 @@ USER=$(echo "$EMAIL" | cut -d '@' -f 1)
 HOST=$(echo "$EMAIL" | cut -d '@' -f 2)
 CA="ca.$HOST"
 MOUNT_POINT="/mnt/vault"
-PKI_ROOT="$MOUINT_POINT/ca"
+PKI_ROOT="$MOUNT_POINT/ca"
 CA_ROOT="$PKI_ROOT/$CA"
 
 # Expiration is set to 10 years
 EXPIRE=3650
 
 
+
 /bin/mountpoint -q $MOUNT_POINT
 if [ $? -eq 0 ] ; then
  if [ -d $CA_ROOT ] ; then
-  /usr/bin/easypki --root $PKI_ROOT create --ca-name $CA_ROOT --client --expire $EXPIRE --email $EMAIL $EMAIL
+  /usr/bin/easypki --root $PKI_ROOT create --ca-name $CA --client --expire $EXPIRE --email $EMAIL $EMAIL
+
+  fi
  else
   echo "[ERROR] Invalid CA($CA_ROOT)"
   exit 2

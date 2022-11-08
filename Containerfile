@@ -41,6 +41,8 @@ COPY vault-monitor /usr/bin/vault-monitor
 COPY ca-server /usr/bin/ca-server
 COPY ca-client /usr/bin/ca-client
 COPY ca-revoke /usr/bin/ca-revoke
+COPY pki-export /usr/bin/pki-export
+
 RUN ln -s /usr/bin/vault-monitor /etc/periodic/15min/vault-monitor
 RUN update-ca-certificates \
  && /bin/mkdir -p /mnt/vault /var/log/letsencrypt /var/lib/letsencrypt \
