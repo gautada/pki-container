@@ -1,26 +1,48 @@
 #!/bin/sh
 
+# ca-server: Creates a server side key/certificate pair.
+
+if [ -z $1 ] ; then
+ echo "[ERROR] Must include a host parameter"
+ exit 1
+fi
+
+/usr/bin/vault-refresh
+
 HOST=$1
-VAULT=ca
+HORT_NAME="$(/bin/echo "$HOST" | cut -d '.' -f 1)"
+DOMAIN="$(/bin/echo "$HOST" | cut -d '.' -f 2)"
+TLD="$(/bin/echo "$HOST" | cut -d '.' -f 3)"
+DOMAIN_NAME="$DOMAIN.$TLD"
+CA="ca.$DOMAIN_NAME"
+MOUNT_POINT="/mnt/vault"
+PKI_ROOT="$MOUNT_POINT/ca"
+CA_ROOT="$PKI_ROOT/$CA"
 
-/bin/vault-refresh $VAULT
+# Expiration is set to 10 years
+EXPIRE=3650
 
-if [ ! -f /opt/pki-data/$VAULT.vhd ] ; then
- echo "[ERROR] Virtual hard disk file does not exist"
- exit 99
+/bin/mountpoint -q $MOUNT_POINT
+if [ $? -eq 0 ] ; then
+ if [ -d $CA_ROOT ] ; then
+  /usr/bin/easypki --root $PKI_ROOT create --ca-name $CA --expire $EXPIRE --dns $HOST $HOST
+ else
+  echo "[ERROR] Invalid CA($CA_ROOT)"
+  exit 2
+ fi
+else
+ echo "[ERROR] Vault is not mounted"
+ exit 3
 fi
 
-sudo cryptsetup status $VAULT.evhd
-if [ $? -eq 0 ] ;  then # check device exists
- echo "[ERROR] Encrypted hard drive status is unknown"
- exit 98
-fi
 
-easypki --root /mnt/$VAULT create --ca-name ca.gautier.local --expire 3650 --dns $HOST $HOST
-
-# mkdir -p /mnt/$VAULT/public
+# This should form the basis of the export function
+# /bin/mkdir -p $CA_ROOT/public
+# if [ ! -f $CA_ROOT/public/$HOST.pem ] ; then
+#  cat $PKI_ROOT/$CA/certs/$HOST.crt $PKI_ROOT/$CA/certs/$CA.crt > $PKI_ROOT/$CA/public/$HOST.pem
+# fi
 # VAULT_PATH=/mnt/$VAULT/ca.gautier.local
 # cat $VAULT_PATH/certs/$HOST.crt $VAULT_PATH/certs/ca.gautier.local.crt > $VAULT_PATH/public/$HOST.pem
 # chmod +r-w $VAULT_PATH/public/$HOST.pem
 
-/bin/vault-refresh $VAULT
+/usr/bin/vault-refresh

@@ -45,9 +45,6 @@ if [ ! $? -eq 0 ] ;  then
  exit 5
 fi
 
-echo "Set vault mount point ownership"
-/usr/bin/sudo chown pki:pki $MOUNT_POINT
-
 echo "Mount the vault"
 /usr/bin/vault-mount
 RTN=$?
