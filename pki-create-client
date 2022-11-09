@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# pki-create-client: Creates a new client signed certficate and packages the key into a distribution file.
+
+if [ -z $1 ] ; then
+ echo "[ERROR] Client host must be provided (host.domain.tld)"
+ exit 1
+fi
+
+MOUNT_POINT=/mnt/vault
+EXPORT_POINT=/opt/pki/outbox
+
+KEYS="$MOUNT_POINT/clients/keys"
+CRTS="$MOUNT_POINT/clients/crts"
+CSRS="$MOUNT_POINT/clients/csrs"
+
+/usr/bin/vault-umount
+/usr/bin/vault-mount
+
+HOST=$1
+
+/bin/mountpoint -q $MOUNT_POINT
+if [ $? -eq 1 ] ; then
+ echo "[ERROR] Vault is not mounted"
+ exit 1
+fi
+
+if [ -f $KEYS/$HOST.key ] ; then
+ echo"[ERROR] Key already exists for client($HOST)"
+ exit 2
+fi
+
+if [ -f $EXPORT_POINT/$HOST.pfx ] ; then
+ echo"[ERROR] Key/Cert package  already exists for client($HOST)"
+ exit 2
+fi
+
+/usr/bin/openssl genrsa -des3 -out $KEYS/$HOST.key 4096
+/usr/bin/openssl req -new \
+ -subj "/C=US/ST=North Carolina/L=Charlotte/O=Client Certificate($HOST)/OU=pki/CN=$HOST" \
+ -key $KEYS/$HOST.key -out $CSRS/$HOST.csr
+/usr/bin/openssl x509 -req -days 3650 -in $CSRS/$HOST.csr -CA $CRTS/ca.client.crt -CAkey $KEYS/ca.client.key -set_serial 01 -out $CRTS/$HOST.crt
+/usr/bin/openssl pkcs12 -export -out $EXPORT_POINT/$HOST.pfx -inkey $KEYS/$HOST.key -in $CRTS/$HOST.crt -certfile $CRTS/ca.client.crt
+
+/usr/bin/vault-umount
+
+  

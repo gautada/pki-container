@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# vault-setup: Creates the encrypted virtual hard disk for the vault and mounts the vault to the default mount point then creates a root certificate authority then unmounts the vault for security.
+
+MOUNT_POINT=/mnt/vault
+
+if [ -f "/opt/pki/vault.evhd" ] ; then
+ echo "[ERROR] Vault(/opt/pki/vault.evhd) previously setup"
+ exit 2
+fi
+
+echo "[INFO] Creating virtual hard drive for vault"
+/bin/dd if=/dev/urandom of=/opt/pki/vault.evhd bs=1M count=100
+
+echo "[INFO] Encrypting virtual hard drive for vault"
+/usr/bin/sudo /sbin/cryptsetup --type=luks2 --verify-passphrase luksFormat /opt/pki/vault.evhd
+
+echo "[INFO] Open vault device"
+/usr/bin/sudo /sbin/cryptsetup luksOpen /opt/pki/vault.evhd vault
+if [ ! $? -eq 0 ] ;  then
+ echo "[ERROR] Unable to open vault(/opt/pki/vault.evhd)"
+ exit 3
+fi
+
+echo "[INFO] Formating vault device"
+/usr/bin/sudo /sbin/mkfs.ext4 /dev/mapper/vault
+if [ ! $? -eq 0 ] ;  then
+ echo "[ERROR] Unable to format vault device(/dev/mapped/vault)"
+ exit 4
+fi
+
+echo "[INFO] Close vault device"
+/usr/bin/sudo /sbin/cryptsetup luksClose vault
+if [ ! $? -eq 0 ] ;  then
+ echo "[ERROR] Unable to close the vault"
+ exit 5
+fi
+
+# echo "Mount the vault"
+# /usr/bin/vault-mount
+# RTN=$?
+# if [ ! $RTN -eq 0 ] ;  then
+#  echo "[ERROR] Unable to mount vault"
+#  exit $RTN
+# fi
+
+echo "[INFO] Create Certificate Authority(Clients) in vault"
+/home/pki/setup-client-ca
+
+echo "Unmount the vault"
+/usr/bin/vault-umount
+RTN=$?
+if [ ! $RTN -eq 0 ] ;  then
+ echo "[ERROR] Unable to unmount vault"
+ exit $RTN
+fi
+
+if [ -f /home/pki/setup-vault ] ; then
+ echo "[INFO] Removing vault setup script"
+ /bin/rm /home/pki/setup-vault
+fi
+
+

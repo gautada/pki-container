@@ -5,7 +5,7 @@
 MOUNT_POINT=/mnt/vault
 
 if [ ! -d $MOUNT_POINT ] ; then
- echo "[WARN] Creating mount poind"
+ echo "[WARN] Creating mount point"
  /usr/bin/sudo /bin/mkdir -p $MOUNT_POINT
  /usr/bin/sudo /bin/chown pki:pki $MOUNT_POINT
 fi

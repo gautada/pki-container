@@ -3,21 +3,22 @@
 # pki-export: Converts the certificate/key combination to pfx
 
 if [ -z $1 ] ; then
- echo "[ERROR] Target must be provided"
+ echo "[ERROR] Keyring must be provided"
  exit 1
 fi
 
+vault-umount
+vault-mount
 
-TARGET=$1
-TMP="${TARGET%%@*}"
-# echo "${#TMP} -- ${#target}"
-if [ ${#TMP} -lt ${#TARGET} ] ; then
- USER="$(/bin/echo "$TARGET" | cut -d '@' -f 1)"
- DOMAIN_NAME="$(/bin/echo "$TARGET" | cut -d '@' -f 2)"
+KEYRING=$1
+TMP="${KEYRING%%@*}"
+if [ ${#TMP} -lt ${#KEYRING} ] ; then
+ USER="$(/bin/echo "$KEYRING" | cut -d '@' -f 1)"
+ DOMAIN_NAME="$(/bin/echo "$KEYRING" | cut -d '@' -f 2)"
 else
- HORT_NAME="$(/bin/echo "$TARGET" | cut -d '.' -f 1)"
- DOMAIN="$(/bin/echo "$TARGET" | cut -d '.' -f 2)"
- TLD="$(/bin/echo "$TARGET" | cut -d '.' -f 3)"
+ HORT_NAME="$(/bin/echo "$KEYRING" | cut -d '.' -f 1)"
+ DOMAIN="$(/bin/echo "$KEYRING" | cut -d '.' -f 2)"
+ TLD="$(/bin/echo "$KEYRING" | cut -d '.' -f 3)"
  DOMAIN_NAME="$DOMAIN.$TLD"
 fi
 
@@ -31,15 +32,15 @@ CA_ROOT="$PKI_ROOT/$CA"
 # - - - - - - - - - - - - - - - - - - -
 
 OUT_BOX="/opt/pki/outbox"
-OUT_FILE="$OUTBOX/$TARGET.pfx"
+OUT_FILE="$OUT_BOX/$KEYRING.pfx"
 
 if [ ! -f  $OUT_FILE ] ; then
- KEY="$CA_ROOT/keys/$TARGET.key"
+ KEY="$CA_ROOT/keys/$KEYRING.key"
  if [ ! -f $KEY ] ; then
   echo "[ERROR] Missing file($KEY)"
   exit 2
  fi
-  CERT="$CA_ROOT/certs/$TARGET.crt"
+  CERT="$CA_ROOT/certs/$KEYRING.crt"
  if [ ! -f $CERT ] ; then
   echo "[ERROR] Missing file($CERT)"
   exit 2
@@ -50,7 +51,10 @@ if [ ! -f  $OUT_FILE ] ; then
   exit 2
  fi
  /usr/bin/openssl pkcs12 -export -out $OUT_FILE -inkey $KEY  -in $CERT  -certfile $CA_CERT
-else:
+else
  echo "[ERROR] PFX($OUT_FILE) already exists"
  exit 3
 fi
+
+vault-umount
+

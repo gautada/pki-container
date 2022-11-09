@@ -27,38 +27,48 @@ COPY 10-ep-container.sh /etc/container/entrypoint.d/10-ep-container.sh
 # │ PACKAGES           │
 # ╰――――――――――――――――――――╯
 # Previously Loaded: nmap sudo shadow
-RUN apk add --no-cache --update build-base e2fsprogs easypki cryptsetup git npm openssh-client openssh openssl python3 py3-augeas py3-cryptography py3-pip yarn
+RUN apk add --no-cache --update \
+ --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+ build-base e2fsprogs easypki cryptsetup git npm openssh-client openssh openssl python3 py3-augeas py3-cryptography py3-pip yarn kubectl
 
 # ╭――――――――――――――――――――╮
 # │ CONFIGURE          │
 # ╰――――――――――――――――――――╯
 # COPY vault-domain-setup /usr/bin/vault-domain-setup
 # COPY vault-setup /usr/bin/vault-setup
-# COPY vault-mount /usr/bin/vault-mount
-# COPY vault-umount /usr/bin/vault-umount
-# COPY vault-refresh /usr/bin/vault-refresh
-# COPY vault-monitor /usr/bin/vault-monitor
+COPY vault-mount /usr/bin/vault-mount
+COPY vault-umount /usr/bin/vault-umount
+COPY vault-refresh /usr/bin/vault-refresh
+COPY vault-monitor /usr/bin/vault-monitor
+COPY pki-create-client /usr/bin/pki-create-client
+COPY pki-create-server /usr/bin/pki-create-server
+COPY setup-vault /home/pki/.pki/setup-vault
 # COPY ca-server /usr/bin/ca-server
 # COPY ca-client /usr/bin/ca-client
 # COPY ca-revoke /usr/bin/ca-revoke
 # COPY pki-export /usr/bin/pki-export
-RUN ln -s /opt/pki/scripts/vault-domain-setup /usr/bin/vault-domain-setup \
- && ln -s /opt/pki/scripts/vault-setup /usr/bin/vault-setup \
- && ln -s /opt/pki/scripts/vault-mount /usr/bin/vault-mount \
- && ln -s /opt/pki/scripts/vault-umount /usr/bin/vault-umount \
- && ln -s /opt/pki/scripts/vault-refresh /usr/bin/vault-refresh \
- && ln -s /opt/pki/scripts/vault-monitor /usr/bin/vault-monitor \
- && ln -s /opt/pki/scripts/ca-server /usr/bin/ca-server \
- && ln -s /opt/pki/scripts/ca-client /usr/bin/ca-client \
- && ln -s /opt/pki/scripts/ca-revoke /usr/bin/ca-revoke \
- && ln -s /opt/pki/scripts/pki-export /usr/bin/pki-export
+# COPY fqdn-parser /usr/bin/fqdn-parser
+
+# RUN ln -s /opt/pki/scripts/vault-domain-setup /usr/bin/vault-domain-setup \
+#  && ln -s /opt/pki/scripts/vault-setup /usr/bin/vault-setup \
+#  && ln -s /opt/pki/scripts/vault-mount /usr/bin/vault-mount \
+#  && ln -s /opt/pki/scripts/vault-umount /usr/bin/vault-umount \
+#  && ln -s /opt/pki/scripts/vault-refresh /usr/bin/vault-refresh \
+#  && ln -s /opt/pki/scripts/vault-monitor /usr/bin/vault-monitor \
+#  && ln -s /opt/pki/scripts/ca-server /usr/bin/ca-server \
+#  && ln -s /opt/pki/scripts/ca-client /usr/bin/ca-client \
+#  && ln -s /opt/pki/scripts/ca-revoke /usr/bin/ca-revoke \
+#  && ln -s /opt/pki/scripts/pki-export /usr/bin/pki-export \
+#  && ln -s /opt/pki/scripts/fqdn-parser /usr/bin/fqdn-parser
  
 RUN ln -s /usr/bin/vault-monitor /etc/periodic/15min/vault-monitor
+
+# - - - CERTBOT - - -
 RUN update-ca-certificates \
  && /bin/mkdir -p /mnt/vault /var/log/letsencrypt /var/lib/letsencrypt \
  && /usr/bin/pip install --upgrade pip \
  && /usr/bin/pip install certbot
-# - - - CERTBOT - - -
+ 
 COPY auth-hook /usr/bin/auth-hook
 COPY hover-auth-hook.py /usr/bin/hover-auth-hook
 COPY certbot-wrapper /usr/bin/certbot-wrapper
@@ -100,3 +110,9 @@ EXPOSE 8080
 # │ CONFIGURE          │
 # ╰――――――――――――――――――――╯
 RUN /usr/bin/yarn global add wetty
+COPY setup-vault /home/pki/.scripts/setup-vault
+COPY setup-ca-clients /home/pki/.scripts/setup-ca-clients
+RUN ln -s /home/pki/.scripts/setup-vault /home/pki/setup-vault \
+ && ln -s /home/pki/.scripts/setup-ca-clients /home/pki/setup-ca-clients \
+ && /bin/mkdir -p ~/.kube \
+ && ln -s /opt/pki/kube.conf /home/pki/.kube/config

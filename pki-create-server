@@ -1,0 +1,43 @@
+#!/bin/sh 
+
+# pki-create-server: Creates a new server  key/certficate pair
+
+if [ -z $1 ] ; then
+ echo "[ERROR] Client host must be provided (host.domain.tld)"
+ exit 1
+fi
+
+MOUNT_POINT=/mnt/vault
+EXPORT_POINT=/opt/pki/outbox
+
+/usr/bin/vault-umount
+/usr/bin/vault-mount
+
+DOMAIN=$1
+
+if [ -f "/opt/pki/envars" ] ; then
+ # export $(/bin/cat envars | xargs)
+ source /opt/pki/envars 
+fi
+
+/bin/mountpoint -q $MOUNT_POINT
+if [ $? -eq 1 ] ; then
+ echo "[ERROR] Vault is not mounted"
+ exit 1
+fi
+
+CA_POINT=$MOUNT_POINT/servers/$DOMAIN 
+/bin/mkdir -p $CA_POINT 
+
+/usr/bin/certbot certonly --agree-tos --config-dir=$CA_POINT \
+  --logs-dir=/home/pki/logs --work-dir=/home/pki/run \
+  --email $CERTBOT_EMAIL --manual --manual-auth-hook=/usr/bin/hover-auth-hook \
+  --noninteractive --preferred-challenges=dns -d *.$DOMAIN
+
+if [ $? -eq 0 ] ; then
+ CA_SRC="/mnt/vault/servers/$DOMAIN/live/$DOMAIN"
+ /usr/bin/openssl pkcs12 -export -out $EXPORT_POINT/$DOMAIN.pfx \
+   -inkey $CA_SRC/privkey.pem -in $CA_SRC/fullchain.pem
+ # /mnt/vault/servers/gautier.org/live/gautier.org/fullchain.pem
+ # /mnt/vault/servers/gautier.org/live/gautier.org/privkey.pem
+fi

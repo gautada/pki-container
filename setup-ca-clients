@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# ca-clients-setup: This script setups the CA for client certificates.
+
+MOUNT_POINT=/mnt/vault
+
+/usr/bin/vault-umount
+/usr/bin/vault-mount
+
+KEYS="$MOUNT_POINT/clients/keys"
+CRTS="$MOUNT_POINT/clients/crts"
+CSRS="$MOUNT_POINT/clients/csrs"
+
+/bin/mountpoint -q $MOUNT_POINT
+if [ $? -eq 1 ] ; then
+ echo "[ERROR] Vault is not mounted"
+ exit 1
+fi
+
+/bin/mkdir -p "$KEYS" 
+/bin/mkdir -p "$CRTS"
+/bin/mkdir -p "$CSRS"
+
+if [ -f "$KEYS/ca.client.key" ] ; then
+ echo "[ERROR] CA Key for clients already exists"
+ exit 2
+fi
+
+echo "[INFO] Generate the CA Root Key/Certificate"
+/usr/bin/openssl genrsa -des3 -out "$KEYS/ca.client.key" 4096
+/usr/bin/openssl req -new -x509 -days 3650 -key "$KEYS/ca.client.key" \
+   -subj "/C=US/ST=North Carolina/L=Charlotte/O=Client Certificate Authority(gautier.org)/OU=pki/CN=pki.gautier.org" \
+   -out "$CRTS/ca.client.crt"
+
+/usr/bin/vault-umount
+
+if [ -f /home/pki/setup-client-ca ] ; then
+ echo "[INFO] Removing Client CA setup script"
+ /bin/rm /home/pki/setup-client-ca
+fi
+
