@@ -34,10 +34,13 @@ RUN apk add --no-cache --update build-base e2fsprogs easypki cryptsetup git npm 
 # ╰――――――――――――――――――――╯
 # COPY vault-domain-setup /usr/bin/vault-domain-setup
 # COPY vault-setup /usr/bin/vault-setup
-# COPY vault-mount /usr/bin/vault-mount
-# COPY vault-umount /usr/bin/vault-umount
-# COPY vault-refresh /usr/bin/vault-refresh
-# COPY vault-monitor /usr/bin/vault-monitor
+COPY vault-mount /usr/bin/vault-mount
+COPY vault-umount /usr/bin/vault-umount
+COPY vault-refresh /usr/bin/vault-refresh
+COPY vault-monitor /usr/bin/vault-monitor
+COPY pki-create-client /usr/bin/pki-create-client
+COPY pki-create-server /usr/bin/pki-create-server
+COPY setup-vault /home/pki/.pki/setup-vault
 # COPY ca-server /usr/bin/ca-server
 # COPY ca-client /usr/bin/ca-client
 # COPY ca-revoke /usr/bin/ca-revoke
@@ -102,3 +105,7 @@ EXPOSE 8080
 # │ CONFIGURE          │
 # ╰――――――――――――――――――――╯
 RUN /usr/bin/yarn global add wetty
+COPY setup-vault /home/pki/.scripts/setup-vault
+COPY setup-ca-clients /home/pki/.scripts/setup-ca-clients
+RUN ln -s /home/pki/.scripts/setup-vault /home/pki/setup-vault \
+ && ln -s /home/pki/.scripts/setup-ca-clients /home/pki/setup-ca-clients

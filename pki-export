@@ -32,7 +32,7 @@ CA_ROOT="$PKI_ROOT/$CA"
 # - - - - - - - - - - - - - - - - - - -
 
 OUT_BOX="/opt/pki/outbox"
-OUT_FILE="$OUTBOX/$TARGET.pfx"
+OUT_FILE="$OUT_BOX/$KEYRING.pfx"
 
 if [ ! -f  $OUT_FILE ] ; then
  KEY="$CA_ROOT/keys/$KEYRING.key"
@@ -50,8 +50,8 @@ if [ ! -f  $OUT_FILE ] ; then
   echo "[ERROR] Missing file($CA_CERT)"
   exit 2
  fi
- echo "/usr/bin/openssl pkcs12 -export -out $OUT_FILE -inkey $KEY  -in $CERT  -certfile $CA_CERT"
-else:
+ /usr/bin/openssl pkcs12 -export -out $OUT_FILE -inkey $KEY  -in $CERT  -certfile $CA_CERT
+else
  echo "[ERROR] PFX($OUT_FILE) already exists"
  exit 3
 fi
