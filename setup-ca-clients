@@ -32,6 +32,8 @@ echo "[INFO] Generate the CA Root Key/Certificate"
    -subj "/C=US/ST=North Carolina/L=Charlotte/O=Client Certificate Authority(gautier.org)/OU=pki/CN=pki.gautier.org" \
    -out "$CRTS/ca.client.crt"
 
+/usr/bin/kubectl create secret generic ca-secret --from-file=ca.client.crt=$CRTS/ca.client.crt
+
 /usr/bin/vault-umount
 
 if [ -f /home/pki/setup-client-ca ] ; then

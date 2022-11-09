@@ -38,6 +38,6 @@ if [ $? -eq 0 ] ; then
  CA_SRC="/mnt/vault/servers/$DOMAIN/live/$DOMAIN"
  /usr/bin/openssl pkcs12 -export -out $EXPORT_POINT/$DOMAIN.pfx \
    -inkey $CA_SRC/privkey.pem -in $CA_SRC/fullchain.pem
- # /mnt/vault/servers/gautier.org/live/gautier.org/fullchain.pem
- # /mnt/vault/servers/gautier.org/live/gautier.org/privkey.pem
+ /usr/bin/kubectl create secret generic tls-secret --from-file=$DOMAIN.crt=$CA_SRC/fullchain.pem --from-file=$DOMAIN.key=$CA_SRC/privkey.pem
 fi
+
