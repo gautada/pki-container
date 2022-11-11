@@ -29,7 +29,7 @@ if [ ! -f /home/$WETTY_USER/.ssh/id_rsa ] ; then
 fi
 # Launch the wetty interface
 if [ -z "$ENTRYPOINT_PARAMS" ] ; then
- /home/$WETTY_USER/.yarn/bin/wetty --port 8080 --ssh-host localhost --ssh-user $WETTY_USER --ssh-auth publickey --ssh-key /home/$WETTY_USER/.ssh/id_rsa --force-ssh --title $WETTY_TITLE --command $WETTY_COMMAND
+ /home/$WETTY_USER/.yarn/bin/wetty --base / --port 8080 --ssh-host localhost --ssh-user $WETTY_USER --ssh-auth publickey --ssh-key /home/$WETTY_USER/.ssh/id_rsa --force-ssh --title $WETTY_TITLE --command $WETTY_COMMAND
  fi
 return 0
 
