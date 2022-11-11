@@ -111,8 +111,8 @@ EXPOSE 8080
 # ╰――――――――――――――――――――╯
 RUN /usr/bin/yarn global add wetty
 COPY setup-vault /home/pki/.scripts/setup-vault
-COPY setup-ca-clients /home/pki/.scripts/setup-ca-clients
+COPY setup-client-ca /home/pki/.scripts/setup-client-ca
 RUN ln -s /home/pki/.scripts/setup-vault /home/pki/setup-vault \
- && ln -s /home/pki/.scripts/setup-ca-clients /home/pki/setup-ca-clients \
+ && ln -s /home/pki/.scripts/setup-client-ca /home/pki/setup-client-ca \
  && /bin/mkdir -p ~/.kube \
  && ln -s /opt/pki/kube.conf /home/pki/.kube/config
