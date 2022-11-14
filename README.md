@@ -2,107 +2,82 @@
 
 ## Abstract
 
-This is an implementation of public key infrastructure (PKI) implementation of a certificate authority (CA) for private/personal servers. This implementation uses an [encrypted virtual disk](https://gitlab.com/cryptsetup/cryptsetup) to hold all of the secure bits. Currently, this is a series of scripts, based on [easypki](https://github.com/google/easypki) that allow for the manipulation of the CA in the encrypted disk. Eventually, this should have a web front end for the public bits and overall management of the PKI. Additionally, this container contains the [certbot](https://certbot.eff.org) which provides certificates to be used publicly.
+This container is a a secure public key infrastructure (PKI) implementation of a certificate authority. The purpose of this implementation is to provide a mechanism for clients to use certificate authentication and server transport layer security (TLS) encryption using [Let's Encrypt](https://letsencrypt.org).
 
-This container provides a private certificate authority(CA) through Google's 'public key infrastructure API - [easyPKI](https://github.com/google/easypki) that intends to provide most of the components needed to manage a PKI, so you can either use the API in your automation, or use the CLI. When public facing keys are needed (i.e. website certificates that need to be signed by a trusted cpublic ertificate authority) the [Automatic Certificate Management Environment (ACME)](https://datatracker.ietf.org/doc/html/rfc8555) provides integration service with [certbot](https://certbot.eff.org) connecting to [Let's Encrypt](https://letsencrypt.org). 
+This implementation uses an [encrypted virtual disk](https://gitlab.com/cryptsetup/cryptsetup) to hold all of the secure bits. 
 
-This container is mainly a collection of scripts that move to automate the CA/PKI management. The CLI can be accessed from a web terminal interface.
+Generally, this container is a collection of scripts that are used for managing the PKI/CA.  
 
+### Client
+
+Following [Client-Side Certificate Authentication with NGINX](https://fardog.io/blog/2017/12/30/client-side-certificate-authentication-with-nginx/) the script `pki-create-client [host.domain.tld]` exports a password protected `.pfx` file for distribution.
+
+### Server
+
+Using [certbot](https://certbot.eff.org) the script `pki-create-server [domain.tld]` generates a signed certificate/key pair for the entire domain (i.e. *.domain.tld).  The authorization/verification hook is via DNS and a specific script `hover-auth-hook.py` provides the mechanism to update a domain on [hover](https://www.hover.com). The certificate/key pair is exported as a password protects `.pfx` for distribution.
 
 ## Features
 
 ### Secure Vault
 
-All data is stored in virtual hard disks(vhd) files. Once created these files are encrypted, then formatted and mounted. The instructions used were from "[How to Set Up Virtual Disk Encryption on GNU/Linux that Unlocks at Boot](https://leewc.com/articles/how-to-set-up-virtual-disk-encryption-linux/)". To run in a container the `--privileged` flag must be used because the encryption uses a loopback device.
+All data is stored in virtual hard disks(vhd) files. Once created these files are encrypted, then formatted and mounted. The instructions used were from "[How to Set Up Virtual Disk Encryption on GNU/Linux that Unlocks at Boot](https://leewc.com/articles/how-to-set-up-virtual-disk-encryption-linux/)". 
 
 ### Export Feature
 
 A PKCS#12 or .pfx file is a file which contains both private key and X.509 certificate, ready to be installed by the customer into servers such as IIS, Tomkat or Exchange. The script `pki-export` produces a password protected `.pfx` file to `/opt/pki/outbox`.
+
 ### Scripts
 
 Scripts are divided into three main segments:
 
 #### Vault
  
-- **vault-setup**: Creates the certificate authority(CA) in an encrypted virtual hard disk (evhd) and makes sure the device can be mounted.  After infrastructure setup this script creates the root CA in the vault unmounts the vault to leave it in a secure state.  
+- **vault-setup**: `/home/pki/setup-vault` creates the secure vault with an encrypted virtual hard disk (evhd) and makes sure the device can be mounted.  After infrastructure setup this script creates the CA for clients in the vault unmounts the vault to leave it in a secure state.  
 - **vault-mount**: Mounts an existing evhd vault to /mnt/vault
 - **vault-umount**: Unmounts the vault and closes the device leaving the vault in as a secure a state as possible.
 - **vault-refresh**: Update the /mnt/vault/.last file with a epoch timestamp. This only works if the vault is mounted. This timestamp is used as the keep-alive ticker.
 - **vault-monitor**: Script that runs every 15min using `crond`. This script tests the keep-alive ticker and will default to calling `vault-umount`.
 
-#### CA/PKI
+#### Client
 
-- **domain-setup**: Creates and intermediate CA for a specific domain.
-- **ca-client**:
-- **ca-server**:
-- **ca-revoke**:
-- **export-pki**
+- **pki-create-client**: `pki-create-client [host.domain.tld]` will create a `.pfx` package that holds the cert/key for a specific host. Just follow the propmpts for the appropriate passwords as asked.
 
-#### Public PKI
+#### Server
 
-- **certbot-wrapper**:
-- **certbot-upgrade**:
-- **auth-hook**:
-- **hover-auth-hook**:
+- **certbot-upgrade**: Makes sure certbot is fully upgraded.  This runs automatically via `crond` monthly.
+- **hover-auth-hook**: Updates the `_acme-challenge` TXT field for the domain hosted on [hover](https://www.hover.com). This requires the environment variables `HOVER_USERNAME` and `HOVER_PASSWORD` to authenticate.
+- **pki-create-server**: `pki-create-server [domain.tld]` will produce a cert/key pair for all hosts in the domain. This script wraps the `certbot` script and exports the cert/key pairs for distribution and if configured installed as a [kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 
+#### Marked for Removal
 
+The following scripts are legacy and no longer used but these are maintained for future reference as needed.
 
- kubectl create secret generic ca-secret --from-file=tls.crt=server.crt --from-file=tls.key=server.key --from-file=ca.crt=ca.crt
- 
-```
-    @startuml
-    !include <C4/C4.puml>
-    !include <C4/C4_Context.puml>
-    !include <C4/C4_Container.puml>
-    !include <C4/C4_Component.puml>
-    !include <C4/C4_Dynamic.puml>
-    !include <C4/C4_Deployment.puml>
+##### let's encrypt
 
-    ' Boundary(alias, label, ?type, ?tags, $link)
-    ' Enterprise_Boundary(alias, label, ?tags, $link)
-    ' System_Boundary
+- **certbot-wrapper**: Executes `certbot` limited to the specifics of how we use for `*.domain.tld`. This script creates a signed cert/key for HTTPS server that works out of the box.
 
-    ' Person{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
-    ' System(alias, label, ?descr, ?sprite, ?tags, $link)
+##### easypki
 
-    ' Component{Db|Queue_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+These were part of trying to use [easypki](https://github.com/google/easypki) as the PKI/CA management API.  Could not get the cert/key pairs to work properly. 
 
-    Title PKI Container - Component Diagram
+- **vault-domain-setup**: Creates the CA for a specific domain.
+- **ca-client**: Uses easypki to create client cert/key.
+- **ca-server**: Uses easypki to create a server cert/key that is not signed, so does not work out of the box in browsers.
+- **ca-revoke**: Creates a revokation list 
+- pki-export: Originally ment to export cert/key pairs to pfx.
 
-    Boundary("DEVICE", "Anonymously Authenticated Device", "Laptop/Mobile Device") {
-     Person("USER", "Non-Authenticate User")
-     Component("CCERT", "Client Authetication Certificate", "certificate", "Client Authetication Certificate")
-    }
-    Boundary("PKI", "pki-container", "Container") {
-     Component("EPKI", "easypki", "API", "easyPKI scripts and API")
-     Boundary("MNT", "/mnt/ca", "Mountpoint") {
-      ComponentDb("CA", "Root CA", "ca", "Root Certificate Authority")
-      ComponentDb("DCA", "Domain CA", "ca.domain.fqdn", "Domain Certificate Authority")
-      ComponentDb("EVHD", "evhd", "/opt/pki/ca.evhd", "Encrypted(luks2) Virtual Hard Drive(evhd)")
-     }
-     Component("WTTY", "ettty", "TTY(Web)", "Web based TTY Interface")
-    }
+## Development
 
-    Rel("EPKI", "CA", "Manage Keys")
-    Rel("EPKI", "DCA", "Manage Keys")
-    Rel("CA", "EVHD", "Store Keys")
-    Rel("DCA", "EVHD", "Store Keys")
-    Rel("USER", "WTTY", "Accesses")
-    Rel("WTTY", "EPKI", "Uses")
-    Rel("PKI", "CCERT", "Authenticates")
-    @enduml
-```
+- Error with 10M container "https://superuser.com/questions/1557750/why-does-cryptsetup-fail-with-container-10m-in-size"
+- Reference: https://wiki.alpinelinux.org/wiki/LVM_on_LUKS
+- [Manpage](https://www.man7.org/linux/man-pages/man8/cryptsetup.8.html)
 
+## Testing
 
-Must be privileged --privilaged
+- Interactive testing guide:  The scripts are prone to bugs during development and to save time in development should be directly symlinked to scripts from repository.
 
-Notes: 
+## Implementation 
 
-Error with 10M container "https://superuser.com/questions/1557750/why-does-cryptsetup-fail-with-container-10m-in-size"
-Reference: https://wiki.alpinelinux.org/wiki/LVM_on_LUKS
+### Container/Kubernetes
 
-https://www.tutorialspoint.com/unix_commands/cryptsetup.htm
-
-
-- - - - - - - - - -
-
+- To run in a container the `--privileged` flag must be used because the encryption uses a loopback device.
