@@ -1,0 +1,41 @@
+    @startuml
+    !include <C4/C4.puml>
+    !include <C4/C4_Context.puml>
+    !include <C4/C4_Container.puml>
+    !include <C4/C4_Component.puml>
+    !include <C4/C4_Dynamic.puml>
+    !include <C4/C4_Deployment.puml>
+
+    ' Boundary(alias, label, ?type, ?tags, $link)
+    ' Enterprise_Boundary(alias, label, ?tags, $link)
+    ' System_Boundary
+
+    ' Person{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+    ' System(alias, label, ?descr, ?sprite, ?tags, $link)
+
+    ' Component{Db|Queue_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+
+    Title PKI Container - Component Diagram
+
+    Boundary("DEVICE", "Anonymously Authenticated Device", "Laptop/Mobile Device") {
+     Person("USER", "Non-Authenticate User")
+     Component("CCERT", "Client Authetication Certificate", "certificate", "Client Authetication Certificate")
+    }
+    Boundary("PKI", "pki-container", "Container") {
+     Component("EPKI", "easypki", "API", "easyPKI scripts and API")
+     Boundary("MNT", "/mnt/ca", "Mountpoint") {
+      ComponentDb("CA", "Root CA", "ca", "Root Certificate Authority")
+      ComponentDb("DCA", "Domain CA", "ca.domain.fqdn", "Domain Certificate Authority")
+      ComponentDb("EVHD", "evhd", "/opt/pki/ca.evhd", "Encrypted(luks2) Virtual Hard Drive(evhd)")
+     }
+     Component("WTTY", "ettty", "TTY(Web)", "Web based TTY Interface")
+    }
+
+    Rel("EPKI", "CA", "Manage Keys")
+    Rel("EPKI", "DCA", "Manage Keys")
+    Rel("CA", "EVHD", "Store Keys")
+    Rel("DCA", "EVHD", "Store Keys")
+    Rel("USER", "WTTY", "Accesses")
+    Rel("WTTY", "EPKI", "Uses")
+    Rel("PKI", "CCERT", "Authenticates")
+    @enduml

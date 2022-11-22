@@ -78,7 +78,6 @@ def parseFQDN(fqdn):
             host = tokens[0]
     assert domain is not None, "Doman cannot be null"
     return(host, domain)
-    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Update DNS TXT field validation for letsencrypt.org.')
     parser.add_argument('--username', default=defaultEnviron('HOVER_USERNAME'), help='The user name of the hover account')

@@ -7,3 +7,10 @@
 %wheel         ALL = (ALL) NOPASSWD: /sbin/cryptsetup
 %wheel         ALL = (ALL) NOPASSWD: /sbin/mkfs.ext4
 
+%wheel         ALL = (ALL) NOPASSWD: /usr/bin/pip
+
+%wheel         ALL = (ALL) NOPASSWD: /usr/sbin/sshd
+%wheel         ALL = (ALL) NOPASSWD: /usr/bin/ssh-keygen
+
+ %wheel         ALL = (ALL) NOPASSWD: /usr/bin/tee
+

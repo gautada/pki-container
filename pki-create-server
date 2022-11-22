@@ -13,7 +13,9 @@ EXPORT_POINT=/opt/pki/outbox
 /usr/bin/vault-umount
 /usr/bin/vault-mount
 
-DOMAIN=$1
+FQDN=$1
+DOMAIN=$(python3 parse_fqdn.py $FQDN domain)
+HOST=$(python3 parse_fqdn.py $FQDN host)
 
 if [ -f "/opt/pki/envars" ] ; then
  # export $(/bin/cat envars | xargs)
@@ -31,13 +33,13 @@ CA_POINT=$MOUNT_POINT/servers/$DOMAIN
 
 /usr/bin/certbot certonly --agree-tos --config-dir=$CA_POINT \
   --logs-dir=/home/pki/logs --work-dir=/home/pki/run \
-  --email $CERTBOT_EMAIL --manual --manual-auth-hook=/usr/bin/hover-auth-hook \
-  --noninteractive --preferred-challenges=dns -d *.$DOMAIN
+  --email $CERTBOT_EMAIL --manual --manual-auth-hook=/home/pki/hover-auth-hook \
+  --noninteractive --preferred-challenges=dns -d $HOST.$DOMAIN
 
-if [ $? -eq 0 ] ; then
- CA_SRC="/mnt/vault/servers/$DOMAIN/live/$DOMAIN"
- /usr/bin/openssl pkcs12 -export -out $EXPORT_POINT/$DOMAIN.pfx \
-   -inkey $CA_SRC/privkey.pem -in $CA_SRC/fullchain.pem
- /usr/bin/kubectl create secret generic tls-secret --from-file=$DOMAIN.crt=$CA_SRC/fullchain.pem --from-file=$DOMAIN.key=$CA_SRC/privkey.pem
-fi
+# if [ $? -eq 0 ] ; then
+#  CA_SRC="/mnt/vault/servers/$DOMAIN/live/$DOMAIN"
+#  /usr/bin/openssl pkcs12 -export -out $EXPORT_POINT/$DOMAIN.pfx \
+#    -inkey $CA_SRC/privkey.pem -in $CA_SRC/fullchain.pem
+#  /usr/bin/kubectl create secret generic tls-$FQDN --from-file=$FQDN.crt=$CA_SRC/fullchain.pem --from-file=$DOMAIN.key=$CA_SRC/privkey.pem
+# fi
 

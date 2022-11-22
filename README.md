@@ -81,3 +81,52 @@ These were part of trying to use [easypki](https://github.com/google/easypki) as
 ### Container/Kubernetes
 
 - To run in a container the `--privileged` flag must be used because the encryption uses a loopback device.
+
+### Cert/Key Usage
+
+#### Unpack .pfx file
+
+Ouput the private key
+
+```
+openssl pkcs12 -in output.pfx -nocerts -out private.key
+```
+
+Output the certificate
+
+```
+openssl pkcs12 -in output.pfx -clcerts -nokeys -out certificate.crt
+```
+
+Decrypt the key, this should only be done when the key is fully controled
+
+```
+openssl rsa -in private.key -out decrypted.key
+```
+
+Create .pem file
+```
+cat certificate.crt [private.key|decrypted.key] > client.pem
+```
+
+### Use with curl
+
+```
+curl -E ./path/to/client.pem https://host.domain.tld
+```
+
+### Use with git
+
+```
+git -c http.sslCert=certificate.crt -c http.sslKey=decrypted.key clone https://host.domain.tld/organization/repository/repo.git
+```
+
+### Use with macOS (Keychain Access)
+
+- To install dobule click the `.pfx` file on the MacBook.
+- For each host where the client auth certificate will be used you need to create an "Identity preference"
+
+### Use with iOS
+
+- Tap the `.pfx` file, usually shared through the **Files** app.
+ 
