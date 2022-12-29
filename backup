@@ -1,0 +1,10 @@
+#!/bin/ash
+
+# container-backup.fnc
+#
+# Calls the gitea backup function and unpacks the data
+# in the /var/backup folder and delete the zip file.
+
+container_backup() {
+  /bin/cp -r /mnt/volumes/container/* ./
+}

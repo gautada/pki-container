@@ -14,26 +14,52 @@ LABEL maintainer="Adam Gautier <adam@gautier.org>"
 LABEL description="PKI container provides all of the requirements for maintaining a useful public-key infrastructure."
 
 # ╭――――――――――――――――――――╮
-# │ ENVIRONMENT        │
+# │ STANDARD CONFIG    │
 # ╰――――――――――――――――――――╯
-RUN ln -s /etc/container/configmap.d /etc/letsencrypt
+
+# USER:
+ARG USER=pki
+
+ARG UID=1001
+ARG GID=1001
+RUN /usr/sbin/addgroup -g $GID $USER \
+ && /usr/sbin/adduser -D -G $USER -s /bin/ash -u $UID $USER \
+ && /usr/sbin/usermod -aG wheel $USER \
+ && /bin/echo "$USER:$USER" | chpasswd
+
+# PRIVILEGE:
+COPY wheel  /etc/container/wheel
+
+# BACKUP:
+COPY backup /etc/container/backup
+
+# ENTRYPOINT:
+RUN /bin/rm -v /etc/container/entrypoint
+COPY entrypoint /etc/container/entrypoint
+
+# FOLDERS
+RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
+ && /bin/chown -R $USER:$USER /mnt/volumes/backup \
+ && /bin/chown -R $USER:$USER /var/backup \
+ && /bin/chown -R $USER:$USER /tmp/backup
 
 # ╭――――――――――――――――――――╮
-# │ ENTRYPOINT         │
+# │ APPLICATION        │
 # ╰――――――――――――――――――――╯
-COPY 10-ep-container.sh /etc/container/entrypoint.d/10-ep-container.sh
-
-# ╭――――――――――――――――――――╮
-# │ PACKAGES           │
-# ╰――――――――――――――――――――╯
-# Previously Loaded: nmap sudo shadow
 RUN apk add --no-cache --update \
  --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
  build-base e2fsprogs easypki cryptsetup git npm openssh-client openssh openssl python3 py3-augeas py3-cryptography py3-pip yarn kubectl
 
-# ╭――――――――――――――――――――╮
-# │ CONFIGURE          │
-# ╰――――――――――――――――――――╯
+RUN /bin/ln -fsv /mnt/volumes/configmaps/letsencrypt /etc/container/letsencrypt \
+ && /bin/ln -fsv /mnt/volumes/container/letsencrypt /mnt/volumes/configmaps/letsencrypt
+
+RUN /bin/ln -fsv /mnt/volumes/configmaps/auth.env /etc/container/auth.env \
+ && /bin/ln -fsv /mnt/volumes/container/auth.env /mnt/volumes/configmaps/auth.env
+
+RUN /bin/ln -fsv /etc/container/kube.conf \
+ && /bin/ln -fsv /mnt/volumes/configmaps/kube.conf /etc/container/kube.conf \
+ && /bin/ln -fsv /mnt/volumes/container/kube.conf /mnt/volumes/configmaps/kube.conf
+
 # COPY vault-domain-setup /usr/bin/vault-domain-setup
 # COPY vault-setup /usr/bin/vault-setup
 COPY vault-mount /usr/bin/vault-mount
@@ -75,44 +101,58 @@ COPY certbot-wrapper /usr/bin/certbot-wrapper
 RUN ln -s /usr/bin/certbot-wrapper /etc/periodic/15min/certbot-wrapper
 COPY certbot-upgrade /usr/bin/certbot-upgrade
 RUN ln -s /usr/bin/certbot-upgrade /etc/periodic/monthly/certbot-upgrade
-RUN ln -s /opt/acme/auth.env /etc/container/configmap.d/auth.env
+
+# RUN ln -s /opt/acme/auth.env /etc/container/configmap.d/auth.env
 
 # ╭――――――――――――――――――――╮
 # │ SUDO               │
 # ╰――――――――――――――――――――╯
-COPY wheel-ssh /etc/container/wheel.d/wheel-ssh
-COPY wheel-pki /etc/container/wheel.d/wheel-pki
-COPY wheel-pip /etc/container/wheel.d/wheel-pip
-COPY wheel-tee /etc/container/wheel.d/wheel-tee
-
+# COPY wheel-ssh /etc/container/wheel.d/wheel-ssh
+# COPY wheel-pki /etc/container/wheel.d/wheel-pki
+# COPY wheel-pip /etc/container/wheel.d/wheel-pip
+# COPY wheel-tee /etc/container/wheel.d/wheel-tee
+#
 # ╭――――――――――――――――――――╮
 # │ USER               │
 # ╰――――――――――――――――――――╯
-ARG UID=1001
-ARG GID=1001
-ARG USER=pki
+# ARG UID=1001
+# ARG GID=1001
+# ARG USER=pki
 # VOLUME /opt/$USER
-RUN /bin/mkdir -p /opt/$USER \
- && /usr/sbin/addgroup -g $GID $USER \
- && /usr/sbin/adduser -D -G $USER -s /bin/ash -u $UID $USER \
- && /usr/sbin/usermod -aG wheel $USER \
- && /bin/echo "$USER:$USER" | chpasswd \
- && /bin/chown $USER:$USER -R /opt/$USER
-USER $USER
-WORKDIR /home/$USER
-
+# RUN /bin/mkdir -p /opt/$USER \
+#  && /usr/sbin/addgroup -g $GID $USER \
+#  && /usr/sbin/adduser -D -G $USER -s /bin/ash -u $UID $USER \
+#  && /usr/sbin/usermod -aG wheel $USER \
+#  && /bin/echo "$USER:$USER" | chpasswd \
+#  && /bin/chown $USER:$USER -R /opt/$USER
+# USER $USER
+# WORKDIR /home/$USER
+#
 # ╭――――――――――――――――――――╮
 # │ PORTS              │
 # ╰――――――――――――――――――――╯
-EXPOSE 8080
+# EXPOSE 8080
+#
+# ln -s /opt/$USER/kube.conf /home/$USER/.kube/config
+# RUN /bin/chown $USER:$USER -R /home/$USER
+
+
+# ╭――――――――――――――――――――╮
+# │ SETTINGS           │
+# ╰――――――――――――――――――――╯
+USER $USER
+VOLUME /mnt/volumes/backup
+VOLUME /mnt/volumes/configmaps
+VOLUME /mnt/volumes/container
+EXPOSE 8080/tcp
+WORKDIR /home/$USER
 
 # ╭――――――――――――――――――――╮
 # │ CONFIGURE          │
 # ╰――――――――――――――――――――╯
 RUN /usr/bin/yarn global add wetty
-COPY setup-vault /home/pki/.scripts/setup-vault
-COPY setup-client-ca /home/pki/.scripts/setup-client-ca
-RUN ln -s /home/pki/.scripts/setup-vault /home/pki/setup-vault \
- && ln -s /home/pki/.scripts/setup-client-ca /home/pki/setup-client-ca \
- && /bin/mkdir -p ~/.kube \
- && ln -s /opt/pki/kube.conf /home/pki/.kube/config
+COPY setup-vault /home/$USER/.scripts/setup-vault
+COPY setup-client-ca /home/$USER/.scripts/setup-client-ca
+RUN ln -s /home/$USER/.scripts/setup-vault /home/$USER/setup-vault \
+ && ln -s /home/$USER/.scripts/setup-client-ca /home/$USER/setup-client-ca
+RUN /bin/mkdir -p ~/.kube
