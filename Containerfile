@@ -46,9 +46,9 @@ RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
 # ╭――――――――――――――――――――╮
 # │ APPLICATION        │
 # ╰――――――――――――――――――――╯
-RUN apk add --no-cache --update \
- --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
- build-base e2fsprogs easypki cryptsetup git npm openssh-client openssh openssl python3 py3-augeas py3-cryptography py3-pip yarn kubectl
+RUN apk add --no-cache build-base yarn npm git
+RUN apk add --no-cache  e2fsprogs easypki cryptsetup openssh-client openssh openssl python3 py3-augeas py3-cryptography py3-pip
+RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
 
 RUN /bin/ln -fsv /mnt/volumes/configmaps/letsencrypt /etc/container/letsencrypt \
  && /bin/ln -fsv /mnt/volumes/container/letsencrypt /mnt/volumes/configmaps/letsencrypt
