@@ -1,13 +1,9 @@
 ARG ALPINE_VERSION=3.16.2
-# ╭――――――――――――――――---------------------------------------------------------――╮
-# │                                                                           │
-# │ STAGE 1: configure-pki -- Pull and configure the ppki environment         │
-# │                                                                           │
-# ╰―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――╯
-FROM gautada/alpine:$ALPINE_VERSION as configure-pki
+
+FROM gautada/alpine:$ALPINE_VERSION
 
 # ╭――――――――――――――――――――╮
-# │ METADATA           │
+# │ METADATA          │
 # ╰――――――――――――――――――――╯
 LABEL source="https://github.com/gautada/pki-container.git"
 LABEL maintainer="Adam Gautier <adam@gautier.org>"
@@ -46,9 +42,13 @@ RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
 # ╭――――――――――――――――――――╮
 # │ APPLICATION        │
 # ╰――――――――――――――――――――╯
-RUN apk add --no-cache build-base yarn npm git
-RUN apk add --no-cache  e2fsprogs easypki cryptsetup openssh-client openssh openssl python3 py3-augeas py3-cryptography py3-pip
-RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
+ARG CRYPTSETUP_VERSION=2.4.3
+ARG CRYPTSETUP_PACKAGE="$CRYPTSETUP_VERSION"-r0
+
+RUN /sbin/apk add --no-cache build-base yarn npm git
+RUN /sbin/apk add --no-cache cryptsetup=$CRYPTSETUP_PACKAGE
+RUN /sbin/apk add --no-cache  e2fsprogs easypki openssh-client openssh openssl python3 py3-augeas py3-cryptography py3-pip
+RUN /sbin/apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
 
 RUN /bin/ln -fsv /mnt/volumes/configmaps/letsencrypt /etc/container/letsencrypt \
  && /bin/ln -fsv /mnt/volumes/container/letsencrypt /mnt/volumes/configmaps/letsencrypt

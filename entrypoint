@@ -14,8 +14,7 @@ ENTRYPOINT_PARAMS="$@"
 . /etc/profile
 
 app_version() {
- # /usr/bin/gitea --version | awk -F ' ' '{print $3}'
- echo "1.0.0"
+ /sbin/cryptsetup --version | awk -F ' ' '{print $2}'
 }
 
 # Make the server ssh key on start

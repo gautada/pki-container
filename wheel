@@ -12,5 +12,5 @@
 %wheel         ALL = (ALL) NOPASSWD: /usr/sbin/sshd
 %wheel         ALL = (ALL) NOPASSWD: /usr/bin/ssh-keygen
 
- %wheel         ALL = (ALL) NOPASSWD: /usr/bin/tee
+%wheel         ALL = (ALL) NOPASSWD: /usr/bin/tee
 

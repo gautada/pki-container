@@ -1,12 +1,10 @@
 # PKI
 
-## Abstract
-
-This container is a a secure public key infrastructure (PKI) implementation of a certificate authority. The purpose of this implementation is to provide a mechanism for clients to use certificate authentication and server transport layer security (TLS) encryption using [Let's Encrypt](https://letsencrypt.org).
+This container is a a secure public key infrastructure (PKI) implementation of a certificate authority (CA). The purpose of this implementation is to provide a mechanism for clients to use certificate authentication and server transport layer security (TLS) encryption using [Let's Encrypt](https://letsencrypt.org).
 
 This implementation uses an [encrypted virtual disk](https://gitlab.com/cryptsetup/cryptsetup) to hold all of the secure bits. 
 
-Generally, this container is a collection of scripts that are used for managing the PKI/CA.  
+Generally, this container is a collection of scripts that are used for managing the PKI and CA  
 
 ### Client
 
@@ -66,67 +64,42 @@ These were part of trying to use [easypki](https://github.com/google/easypki) as
 - **ca-revoke**: Creates a revokation list 
 - pki-export: Originally ment to export cert/key pairs to pfx.
 
-## Development
+## Notes
 
 - Error with 10M container "https://superuser.com/questions/1557750/why-does-cryptsetup-fail-with-container-10m-in-size"
 - Reference: https://wiki.alpinelinux.org/wiki/LVM_on_LUKS
 - [Manpage](https://www.man7.org/linux/man-pages/man8/cryptsetup.8.html)
-
-## Testing
-
-- Interactive testing guide:  The scripts are prone to bugs during development and to save time in development should be directly symlinked to scripts from repository.
-
-## Implementation 
-
-### Container/Kubernetes
-
-- To run in a container the `--privileged` flag must be used because the encryption uses a loopback device.
-
-### Cert/Key Usage
-
-#### Unpack .pfx file
-
-Ouput the private key
+- To create the server-key-set
+```
+pki-create-server msql.gautier.org
 
 ```
-openssl pkcs12 -in output.pfx -nocerts -out private.key
-```
-
-Output the certificate
-
-```
-openssl pkcs12 -in output.pfx -clcerts -nokeys -out certificate.crt
-```
-
-Decrypt the key, this should only be done when the key is fully controled
-
-```
-openssl rsa -in private.key -out decrypted.key
-```
-
-Create .pem file
-```
-cat certificate.crt [private.key|decrypted.key] > client.pem
-```
-
-### Use with curl
-
-```
-curl -E ./path/to/client.pem https://host.domain.tld
-```
-
-### Use with git
-
+- To Use with iOS Tap the `.pfx` file, usually shared through the **Files** app.
+- Use with macOS (Keychain Access)
+ - To install dobule click the `.pfx` file on the MacBook.
+ - For each host where the client auth certificate will be used you need to create an "Identity preference"
+- Use with git
 ```
 git -c http.sslCert=certificate.crt -c http.sslKey=decrypted.key clone https://host.domain.tld/organization/repository/repo.git
 ```
-
-### Use with macOS (Keychain Access)
-
-- To install dobule click the `.pfx` file on the MacBook.
-- For each host where the client auth certificate will be used you need to create an "Identity preference"
-
-### Use with iOS
-
-- Tap the `.pfx` file, usually shared through the **Files** app.
- 
+- Use with curl
+```
+curl -E ./path/to/client.pem https://host.domain.tld
+```
+- Unpack/Manage .pfx file
+ - Ouput the private key
+```
+openssl pkcs12 -in output.pfx -nocerts -out private.key
+```
+ - Output the certificate
+```
+openssl pkcs12 -in output.pfx -clcerts -nokeys -out certificate.crt
+```
+ - Decrypt the key, this should only be done when the key is fully controled
+```
+openssl rsa -in private.key -out decrypted.key
+```
+ - Create .pem file
+```
+cat certificate.crt [private.key|decrypted.key] > client.pem
+```
