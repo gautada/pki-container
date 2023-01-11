@@ -1,0 +1,19 @@
+#!/bin/ash
+
+# /usr/bin/env
+
+CONTENT="$CERTBOT_VALIDATION"
+FQDN="$CERTBOT_DOMAIN"
+DOMAIN=$(~/fqdn-parser $FQDN domain.tld)
+HOST=$(~/fqdn-parser $FQDN host)
+
+echo $CONTENT
+echo $FQDN
+echo $DOMAIN
+echo $HOST
+
+python3 client.py record --plugin "hover" \
+                         --domain "$DOMAIN" \
+                         --record_type "TXT" \
+                         --name "_acme-challenge.$HOST" \
+                         --content "$CONTENT" --url "http://dyndns.util.svc.cluster.local:8080"
