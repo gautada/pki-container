@@ -8,11 +8,6 @@ MOUNT_POINT=/mnt/vault
 /bin/mountpoint -q $MOUNT_POINT
 if [ $? -eq 0 ] ; then
  /usr/bin/sudo /bin/umount $MOUNT_POINT
-else
- if [ -f "$MOUNT_POINT/.last" ] ; then
-  echo "[WARN] Forcing umount"
-  /usr/bin/sudo /bin/umount -f $MOUNT_POINT
- fi
 fi
 
 # echo "[INFO] Close vault"

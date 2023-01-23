@@ -2,16 +2,19 @@
 
 # vault-mount: Opens the vault device (decrypts) and mounts to mount point.
 
-MOUNT_POINT=/mnt/vault
+MOUNT_POINT="/mnt/vault"
+VAULT_PATH="/mnt/volumes/container/vault.evhd"
 
+# If the mount point does not exist then create it.
 if [ ! -d $MOUNT_POINT ] ; then
  echo "[WARN] Creating mount point"
  /usr/bin/sudo /bin/mkdir -p $MOUNT_POINT
  /usr/bin/sudo /bin/chown pki:pki $MOUNT_POINT
 fi
 
-if [ ! -f "/opt/pki/vault.evhd" ] ; then
- echo "[ERROR] Vault(/opt/pki/vault.evhd) not found."
+# Make sure vault exists
+if [ ! -f "$VAULT_PATH" ] ; then
+ echo "[ERROR] Vault(/$VAULT_PATH) not found."
  exit 5
 fi
 
@@ -33,22 +36,24 @@ if [ ! $RTN -eq 4 ] ;  then
 fi
 
 # Open Vault
-/usr/bin/sudo /sbin/cryptsetup luksOpen /opt/pki/vault.evhd vault
+/usr/bin/sudo /sbin/cryptsetup luksOpen $VAULT_PATH vault
 if [ ! $? -eq 0 ] ;  then
- echo "[ERROR] Unable to open vault(/opt/pki/vault.evhd)."
+ echo "[ERROR] Unable to open vault($VAULT_PATH)."
  echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
  ls -l /dev/mapper
  exit 8
 fi
 
-if [ ! -f "$MOUNT_POINT/.last" ] ; then
+/bin/mountpoint -q $MOUNT_POINT
+if [ $? -ne 0 ] ; then
  /usr/bin/sudo /bin/mount /dev/mapper/vault $MOUNT_POINT
- if [ ! $? -eq 0 ] ;  then
-  echo "[ERROR] Unable to mount vault($MOUNT_POINT)."
+ if [ $? -ne 0 ] ;  then
+  echo "[ERROR] Unable to mount($_TEST) vault($MOUNT_POINT)."
   exit 9
+ else
+    # Force all files in vault to be owned by container users
+    /usr/bin/sudo chown -R pki:pki $MOUNT_POINT
+    # Refresh the keep-alive ticker
+    /usr/bin/vault-refresh
  fi
- # Force all files in vault to be owned by container users
- /usr/bin/sudo chown -R pki:pki $MOUNT_POINT
- # Refresh the keep-alive ticker
- /usr/bin/vault-refresh
 fi

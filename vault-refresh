@@ -3,6 +3,7 @@
 # vault-refresh: This script, called after vault operations, updates the timestamp file refreshing the vaults keep-alive ticker
 
 MOUNT_POINT=/mnt/vault
+
 # Check the mount point force if needed
 /bin/mountpoint -q $MOUNT_POINT
 if [ $? -eq 0 ] ; then

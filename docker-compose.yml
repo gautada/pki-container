@@ -2,14 +2,13 @@ version: "3.9"
 services:
   pki:
     dns:
-      - 192.168.4.200
-      - 192.168.4.201
-      - 192.168.4.203
-      - 192.168.4.204
+      - 10.0.4.200
+      - 10.0.4.201
     build:
       args:
         ALPINE_VERSION: "latest"
-        CRYPTSETUP_VERSION: "2.6.0"
+        CRYPTSETUP_VERSION: "2.5.0"
+        CRYPTSETUP_RELEASE: "2"
       context: .
       dockerfile: Containerfile
       no_cache: true

@@ -10,13 +10,13 @@ if [ -f "/opt/pki/vault.evhd" ] ; then
 fi
 
 echo "[INFO] Creating virtual hard drive for vault"
-/bin/dd if=/dev/urandom of=/opt/pki/vault.evhd bs=1M count=100
+/bin/dd if=/dev/urandom of=/mnt/volumes/container/vault.evhd bs=1M count=100
 
 echo "[INFO] Encrypting virtual hard drive for vault"
-/usr/bin/sudo /sbin/cryptsetup --type=luks2 --verify-passphrase luksFormat /opt/pki/vault.evhd
+/usr/bin/sudo /sbin/cryptsetup --type=luks2 --verify-passphrase luksFormat /mnt/volumes/container/vault.evhd
 
 echo "[INFO] Open vault device"
-/usr/bin/sudo /sbin/cryptsetup luksOpen /opt/pki/vault.evhd vault
+/usr/bin/sudo /sbin/cryptsetup luksOpen /mnt/volumes/container/vault.evhd vault
 if [ ! $? -eq 0 ] ;  then
  echo "[ERROR] Unable to open vault(/opt/pki/vault.evhd)"
  exit 3

@@ -1,19 +1,26 @@
 #!/bin/ash
 
 # /usr/bin/env
+#
+# CONTENT="$CERTBOT_VALIDATION"
+# FQDN="$CERTBOT_DOMAIN"
+# DOMAIN=$(~/fqdn-parser $FQDN domain.tld)
+# HOST=$(~/fqdn-parser $FQDN host)
+#
+# echo $CONTENT
+# echo $FQDN
+# echo $DOMAIN
+# echo $HOST
+#
+# python3 client.py record --plugin "hover" \
+#                          --domain "$DOMAIN" \
+#                          --record_type "TXT" \
+#                          --name "_acme-challenge.$HOST" \
+#                          --content "$CONTENT" --url "http://dyndns.util.svc.cluster.local:8080"
 
-CONTENT="$CERTBOT_VALIDATION"
-FQDN="$CERTBOT_DOMAIN"
-DOMAIN=$(~/fqdn-parser $FQDN domain.tld)
-HOST=$(~/fqdn-parser $FQDN host)
+echo -n "$CERTBOT_DOMAIN: '$CERTBOT_VALIDATION'" > test
+read _MY_VAR
 
-echo $CONTENT
-echo $FQDN
-echo $DOMAIN
-echo $HOST
+# /usr/bin/certbot certonly -v --agree-tos --config-dir=/mnt/vault/servers/gautier.org --logs-dir=/home/pki/logs --work-dir=/home/pki/run --email=adam@gautier.org --manual --manual-auth-hook=/home/pki/manual-auth-hook --noninteractive --preferred-challenges=dns -d pki.gautier.org
 
-python3 client.py record --plugin "hover" \
-                         --domain "$DOMAIN" \
-                         --record_type "TXT" \
-                         --name "_acme-challenge.$HOST" \
-                         --content "$CONTENT" --url "http://dyndns.util.svc.cluster.local:8080"
+

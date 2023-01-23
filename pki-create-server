@@ -7,8 +7,8 @@ if [ -z $1 ] ; then
  exit 1
 fi
 
-MOUNT_POINT=/mnt/vault
-EXPORT_POINT=/opt/pki/outbox
+MOUNT_POINT="/mnt/vault"
+OUTBOX="/mnt/volumes/container/outbox"
 
 /usr/bin/vault-umount
 /usr/bin/vault-mount
@@ -18,13 +18,13 @@ DOMAIN=$(~/fqdn-parser $FQDN domain)
 DOMAIN_TLD=$(~/fqdn-parser $FQDN domain.tld)
 HOST=$(~/fqdn-parser $FQDN host)
 
-if [ -f "/opt/pki/envars" ] ; then
+if [ -f "//envars" ] ; then
  # export $(/bin/cat envars | xargs)
  source /opt/pki/envars 
 fi
 
 /bin/mountpoint -q $MOUNT_POINT
-if [ $? -eq 1 ] ; then
+if [ $? -ne 0 ] ; then
  echo "[ERROR] Vault is not mounted"
  exit 1
 fi
@@ -36,8 +36,8 @@ echo "WORKING CA_POINT:$CA_POINT"
 # TEST PARAMS: --dry-run --test-cert
 /usr/bin/certbot certonly -v --agree-tos --config-dir=$CA_POINT \
   --logs-dir=/home/pki/logs --work-dir=/home/pki/run \
-  --email $CERTBOT_EMAIL --manual --manual-auth-hook=/home/pki/manual-auth-hook \
-  --noninteractive --preferred-challenges=dns -d $FQDN
+  --email $CERTBOT_EMAIL --manual --manual-auth-hook=/usr/bin/manual-auth-hook \
+    --noninteractive --preferred-challenges=dns -d $FQDN
 
 # if [ $? -eq 0 ] ; then
 #  CA_SRC="/mnt/vault/servers/$DOMAIN_TLD/live/$DOMAIN_TLD"

@@ -43,7 +43,8 @@ RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
 # │ APPLICATION        │
 # ╰――――――――――――――――――――╯
 ARG CRYPTSETUP_VERSION=2.4.3
-ARG CRYPTSETUP_PACKAGE="$CRYPTSETUP_VERSION"-r0
+ARG CRYPTSETUP_RELEASE=0
+ARG CRYPTSETUP_PACKAGE="$CRYPTSETUP_VERSION"-r"$CRYPTSETUP_RELEASE"
 
 RUN /sbin/apk add --no-cache build-base yarn npm git
 RUN /sbin/apk add --no-cache cryptsetup=$CRYPTSETUP_PACKAGE
@@ -60,20 +61,23 @@ RUN /bin/ln -fsv /etc/container/kube.conf \
  && /bin/ln -fsv /mnt/volumes/configmaps/kube.conf /etc/container/kube.conf \
  && /bin/ln -fsv /mnt/volumes/container/kube.conf /mnt/volumes/configmaps/kube.conf
 
-# COPY vault-domain-setup /usr/bin/vault-domain-setup
-# COPY vault-setup /usr/bin/vault-setup
 COPY vault-mount /usr/bin/vault-mount
 COPY vault-umount /usr/bin/vault-umount
 COPY vault-refresh /usr/bin/vault-refresh
 COPY vault-monitor /usr/bin/vault-monitor
+
 COPY pki-create-client /usr/bin/pki-create-client
 COPY pki-create-server /usr/bin/pki-create-server
-COPY setup-vault /home/pki/.pki/setup-vault
+
+# COPY vault-domain-setup /usr/bin/vault-domain-setup
+# COPY vault-setup /usr/bin/vault-setup
+
+# COPY setup-vault /home/pki/.pki/setup-vault
 # COPY ca-server /usr/bin/ca-server
 # COPY ca-client /usr/bin/ca-client
 # COPY ca-revoke /usr/bin/ca-revoke
 # COPY pki-export /usr/bin/pki-export
-# COPY fqdn-parser /usr/bin/fqdn-parser
+COPY fqdn-parser /usr/bin/fqdn-parser
 
 # RUN ln -s /opt/pki/scripts/vault-domain-setup /usr/bin/vault-domain-setup \
 #  && ln -s /opt/pki/scripts/vault-setup /usr/bin/vault-setup \
@@ -91,16 +95,18 @@ RUN ln -s /usr/bin/vault-monitor /etc/periodic/15min/vault-monitor
 
 # - - - CERTBOT - - -
 RUN update-ca-certificates \
- && /bin/mkdir -p /mnt/vault /var/log/letsencrypt /var/lib/letsencrypt \
+ && /bin/mkdir -p /mnt/volumes/vault /var/log/letsencrypt /var/lib/letsencrypt \
  && /usr/bin/pip install --upgrade pip \
  && /usr/bin/pip install certbot
  
-COPY auth-hook /usr/bin/auth-hook
-COPY hover-auth-hook.py /usr/bin/hover-auth-hook
-COPY certbot-wrapper /usr/bin/certbot-wrapper
-RUN ln -s /usr/bin/certbot-wrapper /etc/periodic/15min/certbot-wrapper
-COPY certbot-upgrade /usr/bin/certbot-upgrade
-RUN ln -s /usr/bin/certbot-upgrade /etc/periodic/monthly/certbot-upgrade
+COPY manual-auth-hook /usr/bin/manual-auth-hook
+
+# COPY auth-hook /usr/bin/auth-hook
+# COPY hover-auth-hook.py /usr/bin/hover-auth-hook
+# COPY certbot-wrapper /usr/bin/certbot-wrapper
+# RUN ln -s /usr/bin/certbot-wrapper /etc/periodic/15min/certbot-wrapper
+# COPY certbot-upgrade /usr/bin/certbot-upgrade
+# RUN ln -s /usr/bin/certbot-upgrade /etc/periodic/monthly/certbot-upgrade
 
 # RUN ln -s /opt/acme/auth.env /etc/container/configmap.d/auth.env
 
