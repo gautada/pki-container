@@ -27,7 +27,7 @@ RUN /usr/sbin/addgroup -g $GID $USER \
 COPY wheel  /etc/container/wheel
 
 # BACKUP:
-COPY backup /etc/container/backup
+# COPY backup /etc/container/backup
 
 # ENTRYPOINT:
 RUN /bin/rm -v /etc/container/entrypoint
@@ -36,6 +36,8 @@ COPY entrypoint /etc/container/entrypoint
 # FOLDERS
 RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
  && /bin/chown -R $USER:$USER /mnt/volumes/backup \
+ && /bin/chown -R $USER:$USER /mnt/volumes/configmaps \
+ && /bin/chown -R $USER:$USER /mnt/volumes/secrets \
  && /bin/chown -R $USER:$USER /var/backup \
  && /bin/chown -R $USER:$USER /tmp/backup
 
@@ -150,6 +152,7 @@ USER $USER
 VOLUME /mnt/volumes/backup
 VOLUME /mnt/volumes/configmaps
 VOLUME /mnt/volumes/container
+VOLUME /mnt/volumes/secrets
 EXPOSE 8080/tcp
 WORKDIR /home/$USER
 

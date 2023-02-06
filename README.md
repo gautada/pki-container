@@ -103,3 +103,5 @@ openssl rsa -in private.key -out decrypted.key
 ```
 cat certificate.crt [private.key|decrypted.key] > client.pem
 ```
+
+

@@ -15,6 +15,7 @@ services:
       tags:
         - "pki:dev"
     image: "pki:dev"
+    hostname: "pki"
     ports:
       - "8080:8080"
     volumes:

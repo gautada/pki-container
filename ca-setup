@@ -7,10 +7,10 @@ else
     echo "CA (directory) is already created"
   else
     echo "Create CA"
-    export PKI_ROOT=/ca
-    easypki create --filename root --ca "Personal Certificate Authority"
+    export PKI_ROOT=/mnt/vault/ca
+    /usr/bin/easypki create --filename root --ca "Personal Root Certificate Authority"
     echo "Create intermediate CA"
-    easypki create --ca-name root --filename ca.gautier.org --intermediate "Certificate Authority for ca.gautier.org"
+    /usr/bin/easypki  create --ca-name root --filename ca.gautier.org --intermediate "Certificate Authority for ca.gautier.org"
 fi
 
 # mkdir -p $PKI_ROOT/ca
