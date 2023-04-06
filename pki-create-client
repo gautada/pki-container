@@ -108,13 +108,19 @@ fi
 
 /usr/bin/vault-umount
 
+
 # /usr/bin/openssl genrsa -des3 -out /mnt/vault/clients/keys/saturn.gautier.org.pem 4096
 
-# /usr/bin/openssl req -new -subj "/C=US/ST=North Carolina/L=Charlotte/O=Client Certificate(saturn.gautier.org)/OU=pki/CN=saturn.gautier.org" -key /mnt/vault/clients/keys/saturn.gautier.org.pem -out /mnt/vault/clients/reqs/saturn.gautier.org.req
+# /usr/bin/openssl req -new -subj "/C=US/ST=North Carolina/L=Charlotte/O=Client Certificate(saturn.gautier.org)/OU=pki/CN=saturn.gautier.org" \
+#  -key /mnt/vault/clients/keys/saturn.gautier.org.pem -out /mnt/vault/clients/reqs/saturn.gautier.org.req
 
-# /usr/bin/openssl x509 -req -days 3650 -in /mnt/vault/clients/reqs/saturn.gautier.org.req -CA /mnt/vault/ca/ca.gautier.org/certs/ca.gautier.org.crt -CAkey /mnt/vault/ca/ca.gautier.org/keys/ca.gautier.org.key -set_serial 01 -out /mnt/vault/clients/certs/saturn.gautier.org.crt
+# /usr/bin/openssl x509 -req -days 3650 -in /mnt/vault/clients/reqs/saturn.gautier.org.req \
+# -CA /mnt/vault/ca/ca.gautier.org/certs/ca.gautier.org.crt -CAkey /mnt/vault/ca/ca.gautier.org/keys/ca.gautier.org.key \
+# -set_serial 01 -out /mnt/vault/clients/certs/saturn.gautier.org.crt
 
-# /usr/bin/openssl pkcs12 -export -out /mnt/volumes/container/outbox/saturn.gautier.org.pfx -inkey /mnt/vault/clients/keys/saturn.gautier.org.pem -in /mnt/vault/clients/certs/saturn.gautier.org.crt -certfile /mnt/vault/ca/ca.gautier.org/certs/ca.gautier.org.crt
+# /usr/bin/openssl pkcs12 -export -out /mnt/volumes/container/outbox/saturn.gautier.org.pfx \
+# -inkey /mnt/vault/clients/keys/saturn.gautier.org.pem \
+# -in /mnt/vault/clients/certs/saturn.gautier.org.crt -certfile /mnt/vault/ca/ca.gautier.org/certs/ca.gautier.org.crt
 
 # cat ca/ca.gautier.org/certs/ca.gautier.org.crt ca/root/certs/root.crt > /mnt/volumes/container/outbox/ca.gautier.org.crt
  

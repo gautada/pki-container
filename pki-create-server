@@ -44,7 +44,7 @@ echo "WORKING CA_POINT:$CA_POINT"
 #  /usr/bin/openssl pkcs12 -export -out $EXPORT_POINT/$DOMAIN.pfx \
 #    -inkey $CA_SRC/privkey.pem -in $CA_SRC/fullchain.pem
 #  /usr/bin/kubectl create secret generic tls-$FQDN --from-file=$FQDN.crt=$CA_SRC/fullchain.pem --from-file=$DOMAIN.key=$CA_SRC/privkey.pem
-fi
+# fi
 
 
 # /usr/bin/openssl pkcs12 -export -out /mnt/volumes/container/outbox/pki.gautier.org.pfx -inkey /mnt/vault/servers/gautier.org/live/pki.gautier.org/prikey.pem -in /mnt/vault/servers/gautier.org/live/pki.gautier.org/fullchain.pem

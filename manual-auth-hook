@@ -21,6 +21,6 @@
 echo -n "$CERTBOT_DOMAIN: '$CERTBOT_VALIDATION'" > /home/pki/.logs/manual-auth-hook
 read _MY_VAR
 
-# /usr/bin/certbot certonly -v --agree-tos --config-dir=/mnt/vault/servers/gautier.org --logs-dir=/home/pki/.logs --work-dir=/home/pki//run --email=adam@gautier.org --manual --manual-auth-hook=/usr/bin/manual-auth-hook --noninteractive --preferred-challenges=dns -d pki.gautier.org
+# /usr/bin/certbot certonly -v --agree-tos --config-dir=/mnt/vault/servers/gautier.org --logs-dir=/home/pki/.logs --work-dir=/home/pki//run --email=adam@gautier.org --manual --manual-auth-hook=/usr/bin/manual-auth-hook --noninteractive --preferred-challenges=dns -d ci.gautier.org
 
 
