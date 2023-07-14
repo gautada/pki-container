@@ -122,4 +122,4 @@ cat certificate.crt [private.key|decrypted.key] > client.pem
 
 %privileged         ALL = (ALL) NOPASSWD: /usr/bin/tee
 
-
+/usr/bin/certbot certonly --agree-tos --config-dir=/home/pki/ca --email $CERTBOT_EMAIL --manual --manual-auth-hook=/usr/bin/hover-auth-hook --noninteractive --preferred-challenges=dns -d *.$DOMAIN
