@@ -1,6 +1,6 @@
 ARG ALPINE_VERSION=3.16.2
 
-FROM gautada/alpine:$ALPINE_VERSION
+FROM gautada/alpine:$ALPINE_VERSION as container
 
 # ╭――――――――――――――――――――╮
 # │ METADATA          │
@@ -10,77 +10,78 @@ LABEL maintainer="Adam Gautier <adam@gautier.org>"
 LABEL description="PKI container provides all of the requirements for maintaining a useful public-key infrastructure."
 
 # ╭――――――――――――――――――――╮
-# │ STANDARD CONFIG    │
+# │ USER               │
 # ╰――――――――――――――――――――╯
-
-# USER:
-ARG USER=pki
-
-ARG UID=1001
-ARG GID=1001
-RUN /usr/sbin/addgroup -g $GID $USER \
- && /usr/sbin/adduser -D -G $USER -s /bin/ash -u $UID $USER \
- && /usr/sbin/usermod -aG wheel $USER \
- && /bin/echo "$USER:$USER" | chpasswd
+ARG USER="pki"
+RUN /usr/sbin/usermod --login $USER --home /home/$USER --move-home alpine
+RUN /usr/sbin/groupmod --new-name $USER alpine
 
 # PRIVILEGE:
-COPY wheel  /etc/container/wheel
+# COPY wheel  /etc/container/wheel
 
 # BACKUP:
 # COPY backup /etc/container/backup
 
 # ENTRYPOINT:
-RUN /bin/rm -v /etc/container/entrypoint
-COPY entrypoint /etc/container/entrypoint
+# RUN /bin/rm -v /etc/container/entrypoint
+# COPY entrypoint /etc/container/entrypoint
 
 # FOLDERS
-RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
- && /bin/chown -R $USER:$USER /mnt/volumes/backup \
- && /bin/chown -R $USER:$USER /mnt/volumes/configmaps \
- && /bin/chown -R $USER:$USER /mnt/volumes/secrets \
- && /bin/chown -R $USER:$USER /var/backup \
- && /bin/chown -R $USER:$USER /tmp/backup
+# RUN /bin/chown -R $USER:$USER /mnt/volumes/container \
+#  && /bin/chown -R $USER:$USER /mnt/volumes/backup \
+#  && /bin/chown -R $USER:$USER /mnt/volumes/configmaps \
+#  && /bin/chown -R $USER:$USER /mnt/volumes/secrets \
+#  && /bin/chown -R $USER:$USER /var/backup \
+#  && /bin/chown -R $USER:$USER /tmp/backup
 
 # ╭――――――――――――――――――――╮
 # │ APPLICATION        │
 # ╰――――――――――――――――――――╯
-ARG CRYPTSETUP_VERSION=2.4.3
-ARG CRYPTSETUP_RELEASE=0
-ARG CRYPTSETUP_PACKAGE="$CRYPTSETUP_VERSION"-r"$CRYPTSETUP_RELEASE"
+# ARG CONTAINER_VERSION="0.0.0"
+# ARG PYTHON_VERSION=$CONTAINER_VERSION
+# RUN /sbin/apk add --no-cache build-base git nodejs npm \
+#                              openssh-client openssh python3 \
+#                              py3-pip yarn
+# RUN /sbin/apk add --no-cache py3-cffi cargo linux-headers python3-dev
+# RUN /sbin/apk add --no-cache py3-pandas py3-matplotlib py3-psycopg
 
-RUN /sbin/apk add --no-cache build-base yarn npm git
-RUN /sbin/apk add --no-cache cryptsetup=$CRYPTSETUP_PACKAGE
+# ARG CRYPTSETUP_VERSION=2.4.3
+# ARG CRYPTSETUP_RELEASE=0
+# ARG CRYPTSETUP_PACKAGE="$CRYPTSETUP_VERSION"-r"$CRYPTSETUP_RELEASE"
+# 
+# RUN /sbin/apk add --no-cache build-base yarn npm git
+# RUN /sbin/apk add --no-cache cryptsetup=$CRYPTSETUP_PACKAGE
 RUN /sbin/apk add --no-cache  e2fsprogs easypki openssh-client openssh openssl python3 py3-augeas py3-cryptography py3-pip
-RUN /sbin/apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
+# RUN /sbin/apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing kubectl
 
-RUN /bin/ln -fsv /mnt/volumes/configmaps/letsencrypt /etc/container/letsencrypt \
- && /bin/ln -fsv /mnt/volumes/container/letsencrypt /mnt/volumes/configmaps/letsencrypt
-
-RUN /bin/ln -fsv /mnt/volumes/configmaps/auth.env /etc/container/auth.env \
- && /bin/ln -fsv /mnt/volumes/container/auth.env /mnt/volumes/configmaps/auth.env
-
-RUN /bin/ln -fsv /etc/container/kube.conf \
- && /bin/ln -fsv /mnt/volumes/configmaps/kube.conf /etc/container/kube.conf \
- && /bin/ln -fsv /mnt/volumes/container/kube.conf /mnt/volumes/configmaps/kube.conf
-
-COPY vault-mount /usr/bin/vault-mount
-COPY vault-umount /usr/bin/vault-umount
-COPY vault-refresh /usr/bin/vault-refresh
-COPY vault-monitor /usr/bin/vault-monitor
-
-COPY pki-create-client /usr/bin/pki-create-client
-COPY pki-create-server /usr/bin/pki-create-server
-
+# RUN /bin/ln -fsv /mnt/volumes/configmaps/letsencrypt /etc/container/letsencrypt \
+#  && /bin/ln -fsv /mnt/volumes/container/letsencrypt /mnt/volumes/configmaps/letsencrypt
+# 
+# RUN /bin/ln -fsv /mnt/volumes/configmaps/auth.env /etc/container/auth.env \
+#  && /bin/ln -fsv /mnt/volumes/container/auth.env /mnt/volumes/configmaps/auth.env
+# 
+# RUN /bin/ln -fsv /etc/container/kube.conf \
+#  && /bin/ln -fsv /mnt/volumes/configmaps/kube.conf /etc/container/kube.conf \
+#  && /bin/ln -fsv /mnt/volumes/container/kube.conf /mnt/volumes/configmaps/kube.conf
+# 
+# COPY vault-mount /usr/bin/vault-mount
+# COPY vault-umount /usr/bin/vault-umount
+# COPY vault-refresh /usr/bin/vault-refresh
+# COPY vault-monitor /usr/bin/vault-monitor
+# 
+# COPY pki-create-client /usr/bin/pki-create-client
+# COPY pki-create-server /usr/bin/pki-create-server
+# 
 # COPY vault-domain-setup /usr/bin/vault-domain-setup
 # COPY vault-setup /usr/bin/vault-setup
-
+# 
 # COPY setup-vault /home/pki/.pki/setup-vault
 # COPY ca-server /usr/bin/ca-server
 # COPY ca-client /usr/bin/ca-client
 # COPY ca-revoke /usr/bin/ca-revoke
 # COPY pki-export /usr/bin/pki-export
-COPY fqdn-parser /usr/bin/fqdn-parser
-
+# COPY fqdn-parser /usr/bin/fqdn-parser
+# 
 # RUN ln -s /opt/pki/scripts/vault-domain-setup /usr/bin/vault-domain-setup \
 #  && ln -s /opt/pki/scripts/vault-setup /usr/bin/vault-setup \
 #  && ln -s /opt/pki/scripts/vault-mount /usr/bin/vault-mount \
@@ -92,8 +93,8 @@ COPY fqdn-parser /usr/bin/fqdn-parser
 #  && ln -s /opt/pki/scripts/ca-revoke /usr/bin/ca-revoke \
 #  && ln -s /opt/pki/scripts/pki-export /usr/bin/pki-export \
 #  && ln -s /opt/pki/scripts/fqdn-parser /usr/bin/fqdn-parser
- 
-RUN ln -s /usr/bin/vault-monitor /etc/periodic/15min/vault-monitor
+# 
+# RUN ln -s /usr/bin/vault-monitor /etc/periodic/15min/vault-monitor
 
 # - - - CERTBOT - - -
 RUN update-ca-certificates \
@@ -111,6 +112,20 @@ COPY manual-auth-hook /usr/bin/manual-auth-hook
 # RUN ln -s /usr/bin/certbot-upgrade /etc/periodic/monthly/certbot-upgrade
 
 # RUN ln -s /opt/acme/auth.env /etc/container/configmap.d/auth.env
+
+# ╭――――――――――――――――――――╮
+# │ STANDARD CONFIG    │
+# ╰――――――――――――――――――――╯
+# COPY backup /etc/container/backup
+# COPY podman.health /etc/container/health.d/podman.health
+COPY entrypoint /etc/container/entrypoint
+COPY privileges /etc/container/privileges
+# COPY setup /etc/container/setup
+
+
+
+
+
 
 # ╭――――――――――――――――――――╮
 # │ SUDO               │
@@ -143,25 +158,41 @@ COPY manual-auth-hook /usr/bin/manual-auth-hook
 #
 # ln -s /opt/$USER/kube.conf /home/$USER/.kube/config
 # RUN /bin/chown $USER:$USER -R /home/$USER
-
-
+# 
+# 
 # ╭――――――――――――――――――――╮
 # │ SETTINGS           │
 # ╰――――――――――――――――――――╯
-USER $USER
-VOLUME /mnt/volumes/backup
-VOLUME /mnt/volumes/configmaps
-VOLUME /mnt/volumes/container
-VOLUME /mnt/volumes/secrets
-EXPOSE 8080/tcp
-WORKDIR /home/$USER
-
+# USER $USER
+# VOLUME /mnt/volumes/backup
+# VOLUME /mnt/volumes/configmaps
+# VOLUME /mnt/volumes/container
+# VOLUME /mnt/volumes/secrets
+# EXPOSE 8080/tcp
+# WORKDIR /home/$USER
+# 
 # ╭――――――――――――――――――――╮
 # │ CONFIGURE          │
 # ╰――――――――――――――――――――╯
-RUN /usr/bin/yarn global add wetty
-COPY setup-vault /home/$USER/.scripts/setup-vault
-COPY setup-client-ca /home/$USER/.scripts/setup-client-ca
-RUN ln -s /home/$USER/.scripts/setup-vault /home/$USER/setup-vault \
- && ln -s /home/$USER/.scripts/setup-client-ca /home/$USER/setup-client-ca
-RUN /bin/mkdir -p ~/.kube
+# RUN /usr/bin/yarn global add wetty
+# COPY setup-vault /home/$USER/.scripts/setup-vault
+# COPY setup-client-ca /home/$USER/.scripts/setup-client-ca
+# RUN ln -s /home/$USER/.scripts/setup-vault /home/$USER/setup-vault \
+#  && ln -s /home/$USER/.scripts/setup-client-ca /home/$USER/setup-client-ca
+# RUN /bin/mkdir -p ~/.kube
+
+
+# ╭――――――――――――――――――――╮
+# │FINAL CONTAINER     │
+# ╰――――――――――――――――――――╯
+FROM scratch
+COPY --from=container / /
+ENTRYPOINT ["/usr/bin/container-entrypoint"]
+VOLUME /mnt/volumes/backup
+VOLUME /mnt/volumes/configmaps
+VOLUME /mnt/volumes/container
+VOLUME /mnt/volumes/secrets/namespace
+VOLUME /mnt/volumes/secrets/container
+EXPOSE 8080/tcp
+USER pki
+WORKDIR /home/pki

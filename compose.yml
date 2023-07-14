@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  pki:
+    build:
+      args:
+        CONTAINER_VERSION: "0.0.0"
+        ALPINE_VERSION: "latest"
+      context: .
+      dockerfile: container.build
+      tags:
+        - "pki:dev"
+        - gautada/pki:dev
+    image: "pki:dev"
+    hostname: "pki"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "container:/mnt/volumes/container"
+      - "backup:/mnt/volumes/backup"
+
+volumes:
+      container:
+        external: true
+        name: Container
+      backup:
+          external: true
+          name: Backup

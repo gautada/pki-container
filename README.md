@@ -105,3 +105,21 @@ cat certificate.crt [private.key|decrypted.key] > client.pem
 ```
 
 
+
+%privileged         ALL = (ALL) NOPASSWD: /bin/chown
+%privileged         ALL = (ALL) NOPASSWD: /bin/chmod
+%privileged         ALL = (ALL) NOPASSWD: /bin/mkdir
+%privileged         ALL = (ALL) NOPASSWD: /bin/mount
+%privileged         ALL = (ALL) NOPASSWD: /bin/umount
+%privileged         ALL = (ALL) NOPASSWD: /bin/rm
+%privileged         ALL = (ALL) NOPASSWD: /sbin/cryptsetup
+%privileged         ALL = (ALL) NOPASSWD: /sbin/mkfs.ext4
+
+%privileged         ALL = (ALL) NOPASSWD: /usr/bin/pip
+
+%privileged         ALL = (ALL) NOPASSWD: /usr/sbin/sshd
+%privileged         ALL = (ALL) NOPASSWD: /usr/bin/ssh-keygen
+
+%privileged         ALL = (ALL) NOPASSWD: /usr/bin/tee
+
+
