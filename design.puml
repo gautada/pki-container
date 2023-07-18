@@ -34,7 +34,11 @@
 ' [Gist Template](https://gist.github.com/gautada/1ba685a39577f3a6ca90e23b42f1031a)
 ' [Examples](https://purrgramming.life/cs/c4-plantuml)85a39577f3a6ca90e23b42f1031a)
 
+<<<<<<< HEAD
 title "Context Diagram - Pattern - Boundary Data Protection"
+=======
+title "Context Diagram - Principle - Encrypted Data"
+>>>>>>> 9a20270a3de9fc708359282e398c0afad99d77c3
 
 Boundary(boundary01, "Boundary") {
  System(systemA, "System A")
@@ -48,6 +52,10 @@ Boundary(boundary02, "Boundary") {
 System_Ext(systemE, "System (External)")
 Person(personA, "Any")
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9a20270a3de9fc708359282e398c0afad99d77c3
 Rel(personA, systemA, "Request", "encrypted (TLS)")
 Rel(systemA, personA, "Response", "encrypted (TLS)")
 Rel(personA, systemE, "Request", "encrypted (TLS)")
@@ -56,6 +64,7 @@ Rel(systemA, systemB, "Message", "encrypted (TLS)")
 Rel(systemB, systemA, "Message", "encrypted (TLS)")
 Rel(systemA, systemE, "Message", "encrypted (TLS)")
 Rel(systemE, systemA, "Message", "encrypted (TLS)")
+<<<<<<< HEAD
 Rel(personI, systemB, "Request", "plain text")
 Rel(systemB, personI, "Response", "plain text")
 
@@ -237,4 +246,11 @@ Rel(admin, domain, "Token", "update")
 Rel(admin, certificate, "Public Certificate", "update")
 Rel(admin, key, "Private Key", "update")
 SHOW_LEGEND()
+=======
+Rel(personB, systemI, "Request", "plain text")
+Rel(systemB, personI, "Response", "plain text")
+
+
+SHOW_LEGEND()
+>>>>>>> 9a20270a3de9fc708359282e398c0afad99d77c3
 @enduml
