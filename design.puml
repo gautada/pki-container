@@ -1,0 +1,240 @@
+@startuml
+!include <C4/C4.puml>
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+!include <C4/C4_Component.puml>
+!include <C4/C4_Dynamic.puml>
+!include <C4/C4_Deployment.puml>
+
+' {System|Enterprise_}Boundary(alias, label, {?type}, ?tags, $link)
+' Person{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+'
+' Context
+' -------
+' System{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+
+' Container
+' ---------
+' Container{Db|Cache|_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, $link)
+'
+' Component
+' ---------
+' Component{Db|Cache|_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+'
+' Relationship
+' ------------
+' {Bi}Rel{Index(index|(from}, to, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+'
+' Notes
+' -----
+' note "This is a note" as n1
+' link to c4 elem: n1 > alias
+'
+' [C4 PlantUML](https://plantuml-stdlib.github.io/C4-PlantUML/)
+' [Gist Template](https://gist.github.com/gautada/1ba685a39577f3a6ca90e23b42f1031a)
+' [Examples](https://purrgramming.life/cs/c4-plantuml)85a39577f3a6ca90e23b42f1031a)
+
+title "Context Diagram - Pattern - Boundary Data Protection"
+
+Boundary(boundary01, "Boundary") {
+ System(systemA, "System A")
+}
+
+Boundary(boundary02, "Boundary") {
+ System(systemB, "System B")
+ Person(personI, "Internal")
+}
+
+System_Ext(systemE, "System (External)")
+Person(personA, "Any")
+
+Rel(personA, systemA, "Request", "encrypted (TLS)")
+Rel(systemA, personA, "Response", "encrypted (TLS)")
+Rel(personA, systemE, "Request", "encrypted (TLS)")
+Rel(systemE, personA, "Response", "encrypted (TLS)")
+Rel(systemA, systemB, "Message", "encrypted (TLS)")
+Rel(systemB, systemA, "Message", "encrypted (TLS)")
+Rel(systemA, systemE, "Message", "encrypted (TLS)")
+Rel(systemE, systemA, "Message", "encrypted (TLS)")
+Rel(personI, systemB, "Request", "plain text")
+Rel(systemB, personI, "Response", "plain text")
+
+Lay_D(personA, boundary01)
+
+SHOW_LEGEND()
+@enduml
+
+
+
+---
+@startuml
+!include <C4/C4.puml>
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+!include <C4/C4_Component.puml>
+!include <C4/C4_Dynamic.puml>
+!include <C4/C4_Deployment.puml>
+
+' {System|Enterprise_}Boundary(alias, label, {?type}, ?tags, $link)
+' Person{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+'
+' Context
+' -------
+' System{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+
+' Container
+' ---------
+' Container{Db|Cache|_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, $link)
+'
+' Component
+' ---------
+' Component{Db|Cache|_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+'
+' Relationship
+' ------------
+' {Bi}Rel{Index(index|(from}, to, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+'
+' Notes
+' -----
+' note "This is a note" as n1
+' link to c4 elem: n1 > alias
+'
+' [C4 PlantUML](https://plantuml-stdlib.github.io/C4-PlantUML/)
+' [Gist Template](https://gist.github.com/gautada/1ba685a39577f3a6ca90e23b42f1031a)
+' [Examples](https://purrgramming.life/cs/c4-plantuml)85a39577f3a6ca90e23b42f1031a)
+
+title "Container Diagram - Reference - Kubernetes Ingress with TLS/HTTPS Encryption"
+
+Boundary(cluster, "Kubernetes Cluster") {
+ Boundary(secret, "tls-certs", "Secrets") {
+  Container(certificate, "tls-crt")
+  Container(key, "tls-key")
+ }
+ Boundary(service, "Services") {
+  Container(serviceA, "Service A")
+  Container(serviceB, "Service B")
+ }
+ 
+ Boundary(node, "Node") {
+  Boundary(daemonset, "Daemonset") {
+   Container(pod, "nginx-ingress-controller (pod)")
+  }
+ }
+ Container(applicationA, "Application A")
+ Container(applicationB, "Application B")
+}
+
+System_Ext(system, "System (External)")
+Person(person, "Any")
+
+Rel(person, pod, "Request", "https")
+Rel(pod, person, "Response", "https")
+Rel(pod, certificate, "Use")
+Rel(pod, key, "Use")
+Rel(pod, serviceA, "Request", "http(8080)")
+Rel(serviceA, pod, "Response", "http(8080)")
+Rel(serviceA, applicationA, "Expose", "http(8080)")
+Rel(serviceB, applicationB, "Expose", "http(8080)")
+Rel(system, pod, "Request", "https")
+Rel(pod, system, "Response", "https")
+Rel(applicationB, pod, "Request", "https")
+Rel(pod, applicationB, "Response", "https")
+Rel(applicationA, serviceB, "Request", "http")
+Rel(serviceB, applicationA, "Response", "http")
+
+SHOW_LEGEND()
+@enduml
+
+
+---
+@startuml
+!include <C4/C4.puml>
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+!include <C4/C4_Component.puml>
+!include <C4/C4_Dynamic.puml>
+!include <C4/C4_Deployment.puml>
+
+' {System|Enterprise_}Boundary(alias, label, {?type}, ?tags, $link)
+' Person{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+'
+' Context
+' -------
+' System{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+
+' Container
+' ---------
+' Container{Db|Cache|_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, $link)
+'
+' Component
+' ---------
+' AddProperty(key, value)
+' Component{Db|Cache|_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+'
+' Relationship
+' ------------
+' {Bi}Rel{Index(index|(from}, to, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+'
+' Notes
+' -----
+' note "This is a note" as n1
+' link to c4 elem: n1 > alias
+'
+' [C4 PlantUML](https://plantuml-stdlib.github.io/C4-PlantUML/)
+' [Gist Template](https://gist.github.com/gautada/1ba685a39577f3a6ca90e23b42f1031a)
+' [Examples](https://purrgramming.life/cs/c4-plantuml)85a39577f3a6ca90e23b42f1031a)
+
+title "Component Diagram - Solution - Let's Encrypt TLS Key Management"
+
+Boundary(cluster, "Kubernetes Cluster") {
+ Boundary(secret, "tls-certs", "Secrets") {
+  Component(certificate, "tls-crt")
+  Component(key, "tls-key")
+ }
+ 
+ 
+ Boundary(node, "Node") {
+  Boundary(daemonset, "Daemonset") {
+   Component(pod, "nginx-ingress-controller (pod)")
+  }
+ }
+}
+
+Boundary(ca, "Certificate Authority") {
+ Component(letsencrypt, "Let's Encrypt")
+}
+
+Boundary(dns, "Domain Name Service", "hover.com") {
+ AddProperty("Token", "TXT:_acme-challenge.<DOMAIN>.<TLD>")
+ Component(domain, "Domain")
+}
+
+AddProperty("subcommand", "certonly")
+AddProperty("options", "agree-tos manual non-interactive")
+AddProperty("config-dir", "~/ca")
+AddProperty("work-dir", "~")
+AddProperty("logs-dir", "~")
+AddProperty("email", "<EMAIL>")
+AddProperty("manual-auth-hook", "/usr/bin/manual-auth-hook")
+AddProperty("preferred-challenges", "dns")
+AddProperty("domain (-d)", "*.<DOMAIN>.<TLD>")
+Component(script, "Certbot Script")
+Component(hook, "Manual Auth Hook")
+
+Person(person, "Any")
+Person(admin, "Administrator")
+
+Rel(person, pod, "Request", "https")
+Rel(pod, person, "Response", "https")
+Rel(pod, certificate, "Use")
+Rel(pod, key, "Use")
+Rel(admin, script, "Run")
+Rel(script, letsencrypt, "Certificate Request", "ACME")
+Rel(letsencrypt, script, "Token")
+Rel(script, hook, "Token", "call")
+Rel(admin, hook, "Token", "read")
+Rel(admin, domain, "Token", "update")
+Rel(admin, certificate, "Public Certificate", "update")
+Rel(admin, key, "Private Key", "update")
+SHOW_LEGEND()
+@enduml
