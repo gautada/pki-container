@@ -1,0 +1,65 @@
+@startuml
+!include <C4/C4.puml>
+!include <C4/C4_Context.puml>
+!include <C4/C4_Container.puml>
+!include <C4/C4_Component.puml>
+!include <C4/C4_Dynamic.puml>
+!include <C4/C4_Deployment.puml>
+
+' {System|Enterprise_}Boundary(alias, label, {?type}, ?tags, $link)
+' Person{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+'
+' Context
+' -------
+' System{_Ext}(alias, label, ?descr, ?sprite, ?tags, $link)
+
+' Container
+' ---------
+' Container{Db|Cache|_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, $link)
+'
+' Component
+' ---------
+' Component{Db|Cache|_Ext}(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+'
+' Relationship
+' ------------
+' {Bi}Rel{Index(index|(from}, to, label, ?techn, ?descr, ?sprite, ?tags, ?link)
+'
+' Notes
+' -----
+' note "This is a note" as n1
+' link to c4 elem: n1 > alias
+'
+' [C4 PlantUML](https://plantuml-stdlib.github.io/C4-PlantUML/)
+' [Gist Template](https://gist.github.com/gautada/1ba685a39577f3a6ca90e23b42f1031a)
+' [Examples](https://purrgramming.life/cs/c4-plantuml)85a39577f3a6ca90e23b42f1031a)
+
+title "Context Diagram - Principle - Encrypted Data"
+
+Boundary(boundary01, "Boundary") {
+ System(systemA, "System A")
+}
+
+Boundary(boundary02, "Boundary") {
+ System(systemB, "System B")
+ Person(personI, "Internal")
+}
+
+System_Ext(systemE, "System (External)")
+Person(personA, "Any")
+
+
+Rel(personA, systemA, "Request", "encrypted (TLS)")
+Rel(systemA, personA, "Response", "encrypted (TLS)")
+Rel(personA, systemE, "Request", "encrypted (TLS)")
+Rel(systemE, personA, "Response", "encrypted (TLS)")
+Rel(systemA, systemB, "Message", "encrypted (TLS)")
+Rel(systemB, systemA, "Message", "encrypted (TLS)")
+Rel(systemA, systemE, "Message", "encrypted (TLS)")
+Rel(systemE, systemA, "Message", "encrypted (TLS)")
+Rel(personB, systemI, "Request", "plain text")
+Rel(systemB, personI, "Response", "plain text")
+
+
+SHOW_LEGEND()
+@enduml
